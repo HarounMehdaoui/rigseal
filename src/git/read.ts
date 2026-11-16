@@ -30,7 +30,10 @@ function parseLsTree(output: string): TreeEntry[] {
       const tab = record.indexOf("\t");
       const [mode, type, oid] = record.slice(0, tab).split(" ");
       if (tab < 0 || mode === undefined || type === undefined || oid === undefined) {
-        throw new GitError("GIT_FAILED", `unexpected git ls-tree output: ${JSON.stringify(record)}`);
+        throw new GitError(
+          "GIT_FAILED",
+          `unexpected git ls-tree output: ${JSON.stringify(record)}`,
+        );
       }
       return { mode, type, oid, path: record.slice(tab + 1) };
     });
