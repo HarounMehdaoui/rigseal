@@ -2,3 +2,11 @@
 CLAUDE.md
 CLAUDE.local.md
 .claude/
+
+# Markdown stays local: docs, plan and lab notes are never committed
+*.md
+
+# Dependencies and build output
+node_modules/
+dist/
+coverage/
