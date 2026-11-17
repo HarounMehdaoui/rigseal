@@ -1,20 +1,24 @@
-// Prisma 7.10.1's implicit choices on PostgreSQL: what a field gets when the schema doesn't say.
-import type { Field } from "./dmmf.ts";
-import { unexpected } from "./schema-error.ts";
-import type { ColumnDefault, NativeType } from "./types.ts";
+// What a Prisma 7.10.1 field means as a Postgres column: its type (`@db.*` or Prisma's default) and who fills its default.
 
-/** Prisma's native type for a scalar without `@db.*` (RULES §4, §6 row 2). */
-const DEFAULT_NATIVE_TYPES: Readonly<Record<string, NativeType>> = {
-  String: { name: "Text", args: [] },
-  Int: { name: "Integer", args: [] },
-  BigInt: { name: "BigInt", args: [] },
-  Float: { name: "DoublePrecision", args: [] },
-  Decimal: { name: "Decimal", args: ["65", "30"] },
-  DateTime: { name: "Timestamp", args: ["3"] },
-  Boolean: { name: "Boolean", args: [] },
-  Json: { name: "JsonB", args: [] },
-  Bytes: { name: "ByteA", args: [] },
-};
+import type { PgType } from "../types.ts";
+import type { Field } from "./dmmf.ts";
+import { pgTypeName } from "./pg-type-names.ts";
+import { unexpected } from "./schema-error.ts";
+import type { ColumnDefault } from "./types.ts";
+
+/** Prisma's native type for a scalar without `@db.*`, in Postgres's spelling (RULES §4, §6 row 2). */
+const DEFAULT_TYPES: Readonly<Record<string, { readonly name: string; readonly args: string[] }>> =
+  {
+    String: { name: "text", args: [] },
+    Int: { name: "int4", args: [] },
+    BigInt: { name: "int8", args: [] },
+    Float: { name: "float8", args: [] },
+    Decimal: { name: "numeric", args: ["65", "30"] },
+    DateTime: { name: "timestamp", args: ["3"] },
+    Boolean: { name: "bool", args: [] },
+    Json: { name: "jsonb", args: [] },
+    Bytes: { name: "bytea", args: [] },
+  };
 
 /**
  * Every `@default` function Prisma 7.10.1 accepts on PostgreSQL, and who applies it (§6 row 5).
@@ -32,15 +36,18 @@ const DEFAULT_FUNCTIONS: Readonly<Record<string, ColumnDefault>> = {
 
 const LITERAL_DEFAULT: ColumnDefault = { kind: "literal", appliedBy: "prisma" };
 
-/** The field's `@db.*` type, else Prisma's default for its scalar. `where` names it in errors. */
-export function nativeType(field: Field, where: string): NativeType {
+/** The column's Postgres type: its `@db.*` type, else Prisma's default for its scalar. */
+export function nativeType(field: Field, where: string): PgType {
+  const array = field.isList;
   if (field.nativeType) {
-    const [name, args] = field.nativeType;
-    return { name, args: [...args] };
+    const [prismaName, args] = field.nativeType;
+    const name =
+      pgTypeName(prismaName) ?? unexpected(`${where}: unknown native type @db.${prismaName}`);
+    return { name, args: [...args], array };
   }
-  return (
-    DEFAULT_NATIVE_TYPES[field.type] ?? unexpected(`${where}: unknown scalar type ${field.type}`)
-  );
+  const fallback =
+    DEFAULT_TYPES[field.type] ?? unexpected(`${where}: unknown scalar type ${field.type}`);
+  return { ...fallback, array };
 }
 
 /** The field's `@default` and who applies it, or `null` without one (`@updatedAt` has none). */

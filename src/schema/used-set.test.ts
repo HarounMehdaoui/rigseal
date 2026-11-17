@@ -1,5 +1,7 @@
 // One fixture per rule in RULES §2, plus the empty-schema case (D37).
 import { describe, expect, it } from "vitest";
+import { normalize } from "../sql/normalize/normalize.ts";
+import { parseSql } from "../sql/parse.ts";
 import type { UsedSet } from "./types.ts";
 import { buildUsedSet } from "./used-set.ts";
 
@@ -123,18 +125,22 @@ describe("buildUsedSet: RULES §2", () => {
       name: "id",
       field: "id",
       prismaType: "Int",
-      nativeType: { name: "Integer", args: [] },
+      nativeType: { name: "int4", args: [], array: false },
       optional: false,
       list: false,
       default: { kind: "autoincrement", appliedBy: "database" },
       enum: null,
     });
     expect(column(set, "User", "email")).toMatchObject({
-      nativeType: { name: "VarChar", args: ["255"] },
+      nativeType: { name: "varchar", args: ["255"], array: false },
       optional: true,
       default: null,
     });
-    expect(column(set, "User", "tags")).toMatchObject({ list: true, optional: false });
+    expect(column(set, "User", "tags")).toMatchObject({
+      list: true,
+      optional: false,
+      nativeType: { name: "text", args: [], array: true },
+    });
     expect(column(set, "User", "role")).toMatchObject({
       prismaType: "Role",
       nativeType: null,
@@ -143,7 +149,7 @@ describe("buildUsedSet: RULES §2", () => {
     });
   });
 
-  it("falls back to Prisma's default native type for each scalar without @db.*", () => {
+  it("falls back to Prisma's default native type for each scalar without @db.*, in Postgres spelling", () => {
     const set = used(`
       model T {
         s  String   @id
@@ -159,16 +165,40 @@ describe("buildUsedSet: RULES §2", () => {
     `);
     const native = [...table(set, "T").columns.values()].map((c) => c.nativeType);
     expect(native).toEqual([
-      { name: "Text", args: [] },
-      { name: "Integer", args: [] },
-      { name: "BigInt", args: [] },
-      { name: "DoublePrecision", args: [] },
-      { name: "Decimal", args: ["65", "30"] },
-      { name: "Timestamp", args: ["3"] },
-      { name: "Boolean", args: [] },
-      { name: "JsonB", args: [] },
-      { name: "ByteA", args: [] },
+      { name: "text", args: [], array: false },
+      { name: "int4", args: [], array: false },
+      { name: "int8", args: [], array: false },
+      { name: "float8", args: [], array: false },
+      { name: "numeric", args: ["65", "30"], array: false },
+      { name: "timestamp", args: ["3"], array: false },
+      { name: "bool", args: [], array: false },
+      { name: "jsonb", args: [], array: false },
+      { name: "bytea", args: [], array: false },
     ]);
+  });
+
+  it("spells types exactly as the SQL normalizer does, so rules can compare them", async () => {
+    const set = used(`
+      model T {
+        id   Int      @id
+        name String   @db.VarChar(255)
+        born DateTime @db.Timestamptz(6)
+        code String   @db.Char(2)
+        n    Decimal  @db.Decimal(10, 2)
+        tags String[]
+      }
+    `);
+    const sql =
+      "ALTER TABLE t ALTER COLUMN a TYPE INTEGER, ALTER COLUMN b TYPE VARCHAR(255)," +
+      " ALTER COLUMN c TYPE TIMESTAMPTZ(6), ALTER COLUMN d TYPE CHAR(2)," +
+      " ALTER COLUMN e TYPE DECIMAL(10,2), ALTER COLUMN f TYPE TEXT[];";
+    const parsed = await parseSql(sql);
+    if (parsed.kind !== "parsed") throw new Error(parsed.message);
+    const fromSql = normalize("m", parsed.statements).map((c) =>
+      c.kind === "AlterColumnType" ? c.type : c.kind,
+    );
+    const fromSchema = [...table(set, "T").columns.values()].map((c) => c.nativeType);
+    expect(fromSchema).toEqual(fromSql);
   });
 
   it("marks only autoincrement() and dbgenerated() as applied by the database", () => {

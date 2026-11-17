@@ -1,10 +1,5 @@
 // The used set's shape: what base's Prisma client reads and writes, under database names (RULES §2).
-
-/** A native type in Prisma's own spelling: `@db.VarChar(255)` → `{ name: "VarChar", args: ["255"] }`. */
-export interface NativeType {
-  readonly name: string;
-  readonly args: readonly string[];
-}
+import type { PgType } from "../types.ts";
 
 /** Which `@default` a field has: a fixed value (`literal`) or the function that makes the value. */
 export type DefaultKind =
@@ -30,8 +25,8 @@ export interface UsedColumn {
   readonly field: string;
   /** Prisma type as written: `String`, `Int`, … or the enum's Prisma name. */
   readonly prismaType: string;
-  /** `@db.*`, else Prisma's default for the scalar. `null` for enum columns: their type is the enum. */
-  readonly nativeType: NativeType | null;
+  /** In Postgres's spelling (`int4`, `varchar(255)`): `@db.*`, else Prisma's default for the scalar. `null` for enum columns: their type is the enum. */
+  readonly nativeType: PgType | null;
   readonly optional: boolean;
   readonly list: boolean;
   readonly default: ColumnDefault | null;
