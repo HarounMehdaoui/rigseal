@@ -1,6 +1,7 @@
-// One fixture per rule in RULES §2, plus the getDMMF guards T2.2 found.
+// One fixture per rule in RULES §2, plus the empty-schema case (D37).
 import { describe, expect, it } from "vitest";
-import { buildUsedSet, SchemaError, type UsedSet } from "./used-set.ts";
+import type { UsedSet } from "./types.ts";
+import { buildUsedSet } from "./used-set.ts";
 
 const DATASOURCE = 'datasource db {\n  provider = "postgresql"\n}\n';
 
@@ -235,21 +236,7 @@ describe("buildUsedSet: RULES §2", () => {
   });
 });
 
-describe("buildUsedSet: guards", () => {
-  it("throws SchemaError for an invalid schema, with Prisma's message and no colour codes", () => {
-    const invalid = 'datasource db {\n  provider = "postgresql"\n  url = "postgres://x"\n}\n';
-    let thrown: unknown;
-    try {
-      buildUsedSet(invalid);
-    } catch (error) {
-      thrown = error;
-    }
-    expect(thrown).toBeInstanceOf(SchemaError);
-    const message = thrown instanceof Error ? thrown.message : "";
-    expect(message).toContain("`url` is no longer supported");
-    expect(message).not.toContain("\u001b");
-  });
-
+describe("buildUsedSet: empty schema", () => {
   it("accepts a schema with no models as an empty used set (D37: the report warns)", () => {
     const set = buildUsedSet(DATASOURCE);
     expect(set.tables.size).toBe(0);

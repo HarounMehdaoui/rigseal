@@ -1,5 +1,6 @@
 // Picks "base": the release production runs, i.e. the code a rollback goes back to (D5, D35).
-import { resolveCommit, runGit } from "./git.ts";
+import { runGit } from "./git.ts";
+import { resolveCommit } from "./resolve-commit.ts";
 
 export type BaseResolution =
   | { readonly ref: string; readonly sha: string; readonly method: "tag" }

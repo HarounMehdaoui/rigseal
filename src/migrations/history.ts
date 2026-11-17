@@ -1,6 +1,5 @@
-// Base's migration folders vs head's: which are new, unchanged, modified or removed (D9, D18, D19).
-import { createHash } from "node:crypto";
-import type { EditedMigration } from "../types.ts";
+// Compares base's migration folders with head's: new, unchanged, modified or removed (D9, D18).
+import { fingerprint } from "./fingerprint.ts";
 
 /** One migration folder as read at a ref: its name and its `migration.sql`. */
 export interface MigrationFolder {
@@ -19,14 +18,6 @@ export interface HistoryEntry {
   readonly head: string | null;
 }
 
-/**
- * SHA-256 (hex) of the SQL after CRLF → LF (D19). That's Prisma's own checksum, so a Windows
- * checkout that only changed line endings isn't an edit (RULES §6 row 12).
- */
-export function fingerprint(sql: string): string {
-  return createHash("sha256").update(sql.replaceAll("\r\n", "\n"), "utf8").digest("hex");
-}
-
 /** Every folder in base or head, once, sorted by name: the order Prisma applies them in. */
 export function diffHistory(
   base: readonly MigrationFolder[],
@@ -41,21 +32,6 @@ export function diffHistory(
     const h = headHashes.get(name) ?? null;
     return { name, status: status(b, h), base: b, head: h };
   });
-}
-
-/** The history entries RG-DB-020 judges: released migrations that head edited or deleted. */
-export function editedMigrations(history: readonly HistoryEntry[]): EditedMigration[] {
-  const edited: EditedMigration[] = [];
-  for (const entry of history) {
-    if (entry.status === "modified" || entry.status === "removed") {
-      edited.push({
-        kind: "EditedMigration",
-        edit: entry.status,
-        source: { kind: "migration", migration: entry.name },
-      });
-    }
-  }
-  return edited;
 }
 
 function fingerprints(folders: readonly MigrationFolder[]): Map<string, string> {

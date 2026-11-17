@@ -1,35 +1,18 @@
 // The one place that runs git (D34): execFile with an argument array, so no shell ever parses input.
 import { type ExecFileException, execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { GitError } from "./errors.ts";
 
 const execFileAsync = promisify(execFile);
 
-export type GitErrorCode =
-  | "REF_NOT_FOUND"
-  | "PATH_NOT_FOUND"
-  | "NOT_A_FILE"
-  | "NOT_A_DIRECTORY"
-  | "GIT_FAILED";
-
-/** Every git problem surfaces as this one error type; the CLI maps it to exit 2. */
-export class GitError extends Error {
-  readonly code: GitErrorCode;
-
-  constructor(code: GitErrorCode, message: string, options?: ErrorOptions) {
-    super(message, options);
-    this.name = "GitError";
-    this.code = code;
-  }
-}
-
-interface GitResult {
+export interface GitResult {
   readonly exitCode: number;
   readonly stdout: string;
   readonly stderr: string;
 }
 
 /** Runs git and reports its exit code instead of throwing on a non-zero one. */
-async function execGit(repo: string, args: readonly string[]): Promise<GitResult> {
+export async function execGit(repo: string, args: readonly string[]): Promise<GitResult> {
   try {
     const { stdout, stderr } = await execFileAsync("git", ["-C", repo, ...args], {
       encoding: "utf8",
@@ -59,28 +42,4 @@ export async function runGit(repo: string, args: readonly string[]): Promise<str
     );
   }
   return result.stdout;
-}
-
-/** Resolves a ref (branch, tag, SHA) to the SHA of the commit it points at. */
-export async function resolveCommit(repo: string, ref: string): Promise<string> {
-  // --end-of-options: a ref like "--output=x" is read as a ref, never as an option.
-  // ^{commit}: peels an annotated tag down to its commit.
-  const result = await execGit(repo, [
-    "rev-parse",
-    "--verify",
-    "--quiet",
-    "--end-of-options",
-    `${ref}^{commit}`,
-  ]);
-  // With --verify --quiet, exit 1 means exactly "no such commit"; other codes are real failures.
-  if (result.exitCode === 1) {
-    throw new GitError("REF_NOT_FOUND", `"${ref}" is not a branch, tag or commit in ${repo}`);
-  }
-  if (result.exitCode !== 0) {
-    throw new GitError(
-      "GIT_FAILED",
-      `git rev-parse ${ref} exited ${result.exitCode}: ${result.stderr.trim()}`,
-    );
-  }
-  return result.stdout.trim();
 }
