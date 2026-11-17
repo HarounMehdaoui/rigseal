@@ -2,7 +2,8 @@
 import type { Change, StatementSource } from "../../types.ts";
 import type { AlterTableCmd, AlterTableStmt } from "../parse.ts";
 import { readColumnDef } from "./column-def.ts";
-import { fromRangeVar } from "./table-name.ts";
+import { addConstraint } from "./constraint.ts";
+import { fromRangeVar } from "./qualified-name.ts";
 import { pgType } from "./type-name.ts";
 import { unrecognized } from "./unrecognized.ts";
 
@@ -21,7 +22,7 @@ export function alterTable(
 
   return (stmt.cmds ?? []).map((node, action) =>
     "AlterTableCmd" in node
-      ? command(ref.table, node.AlterTableCmd, at(action))
+      ? command(ref.name, node.AlterTableCmd, at(action))
       : unrecognized(STATEMENT, "an action the parser didn't label", at(action)),
   );
 }
@@ -38,8 +39,19 @@ function command(table: string, cmd: AlterTableCmd, source: StatementSource): Ch
     return { kind: "AddColumn", table, ...shape, source };
   }
 
-  const column = cmd.name;
-  if (column === undefined) return unrecognized(what, "the action names no column", source);
+  if (cmd.subtype === "AT_AddConstraint") {
+    if (def === undefined || !("Constraint" in def)) {
+      return unrecognized(what, "the constraint could not be read", source);
+    }
+    return addConstraint(table, def.Constraint, source);
+  }
+
+  // DROP CONSTRAINT names the constraint; the column actions below name a column.
+  const name = cmd.name;
+  if (name === undefined)
+    return unrecognized(what, "the action names no column or constraint", source);
+  if (cmd.subtype === "AT_DropConstraint") return { kind: "DropConstraint", table, name, source };
+  const column = name;
 
   switch (cmd.subtype) {
     case "AT_DropColumn":

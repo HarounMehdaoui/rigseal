@@ -1,5 +1,5 @@
 // Core types shared by the pipeline (docs/ARCHITECTURE.md "Core types"). Only what exists so far:
-// T3.3 adds the constraint, index, enum and data changes to the Change union.
+// T5.2 adds RemoveEnumValue (the enum-recreate recognizer).
 
 export type Severity = "SAFE" | "RISKY" | "UNSAFE";
 
@@ -119,6 +119,86 @@ export interface DropDefault extends ColumnChange {
   readonly kind: "DropDefault";
 }
 
+export interface AddConstraint extends TableChange {
+  readonly kind: "AddConstraint";
+  readonly constraint: "unique" | "primaryKey" | "check" | "foreignKey";
+  /** `null` when the SQL doesn't name it (Postgres then picks one). */
+  readonly name: string | null;
+  /** The constrained columns; empty for CHECK, whose expression isn't analysed (RG-DB-013). */
+  readonly columns: readonly string[];
+}
+
+export interface DropConstraint extends TableChange {
+  readonly kind: "DropConstraint";
+  readonly name: string;
+}
+
+export interface CreateUniqueIndex extends TableChange {
+  readonly kind: "CreateUniqueIndex";
+  readonly name: string | null;
+  /** The plain columns indexed. */
+  readonly columns: readonly string[];
+  /** Some indexed parts are expressions (`lower("email")`), so `columns` isn't the whole key. */
+  readonly expressions: boolean;
+}
+
+export interface CreateIndex extends TableChange {
+  readonly kind: "CreateIndex";
+  readonly name: string | null;
+}
+
+/** `DROP INDEX` names only the index; matching it to base's unique indexes is RG-DB-023's job. */
+export interface DropIndex {
+  readonly kind: "DropIndex";
+  readonly name: string;
+  readonly source: StatementSource;
+}
+
+export interface RenameIndex {
+  readonly kind: "RenameIndex";
+  readonly name: string;
+  readonly newName: string;
+  readonly source: StatementSource;
+}
+
+export interface CreateEnum {
+  readonly kind: "CreateEnum";
+  readonly enum: string;
+  readonly values: readonly string[];
+  readonly source: StatementSource;
+}
+
+export interface DropEnum {
+  readonly kind: "DropEnum";
+  readonly enum: string;
+  readonly source: StatementSource;
+}
+
+export interface AddEnumValue {
+  readonly kind: "AddEnumValue";
+  readonly enum: string;
+  readonly value: string;
+  readonly source: StatementSource;
+}
+
+export interface RenameEnum {
+  readonly kind: "RenameEnum";
+  readonly enum: string;
+  readonly newName: string;
+  readonly source: StatementSource;
+}
+
+export interface UpdateRows extends TableChange {
+  readonly kind: "UpdateRows";
+  /** The columns the UPDATE sets (RG-DB-018's backfill exception reads them). */
+  readonly columns: readonly string[];
+}
+
+export interface DeleteRows extends TableChange {
+  readonly kind: "DeleteRows";
+  readonly via: "delete" | "truncate";
+}
+
 /** A statement (or one action of it) that parsed but that no normalizer models (RG-DB-022, D13). */
 export interface Unrecognized {
   readonly kind: "Unrecognized";
@@ -143,4 +223,16 @@ export type Change =
   | DropNotNull
   | SetDefault
   | DropDefault
+  | AddConstraint
+  | DropConstraint
+  | CreateUniqueIndex
+  | CreateIndex
+  | DropIndex
+  | RenameIndex
+  | CreateEnum
+  | DropEnum
+  | AddEnumValue
+  | RenameEnum
+  | UpdateRows
+  | DeleteRows
   | Unrecognized;

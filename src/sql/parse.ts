@@ -4,15 +4,22 @@ import { byteOffsetToLine, codePointToLine } from "./line-index.ts";
 
 // The AST types the normalizer reads, re-exported so this stays the one door to libpg-query (D38).
 export type {
+  AlterEnumStmt,
   AlterTableCmd,
   AlterTableStmt,
   ColumnDef,
+  Constraint,
+  CreateEnumStmt,
   CreateStmt,
+  DeleteStmt,
   DropStmt,
+  IndexStmt,
   Node,
   RangeVar,
   RenameStmt,
+  TruncateStmt,
   TypeName,
+  UpdateStmt,
 } from "libpg-query";
 
 export interface Statement {

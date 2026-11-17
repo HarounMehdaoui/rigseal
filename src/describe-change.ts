@@ -33,6 +33,38 @@ export function describeChange(change: Change): string {
       return `SET DEFAULT ${column(change)}`;
     case "DropDefault":
       return `DROP DEFAULT ${column(change)}`;
+    case "AddConstraint": {
+      const name = change.name === null ? "" : ` "${change.name}"`;
+      const columns = change.columns.length > 0 ? ` (${quoted(change.columns)})` : "";
+      return `ADD CONSTRAINT${name} ${CONSTRAINT_WORDS[change.constraint]} ON "${change.table}"${columns}`;
+    }
+    case "DropConstraint":
+      return `DROP CONSTRAINT "${change.name}" ON "${change.table}"`;
+    case "CreateUniqueIndex": {
+      const name = change.name === null ? "" : ` "${change.name}"`;
+      const parts = [...change.columns.map((c) => `"${c}"`), ...(change.expressions ? ["…"] : [])];
+      return `CREATE UNIQUE INDEX${name} ON "${change.table}" (${parts.join(", ")})`;
+    }
+    case "CreateIndex":
+      return `CREATE INDEX${change.name === null ? "" : ` "${change.name}"`} ON "${change.table}"`;
+    case "DropIndex":
+      return `DROP INDEX "${change.name}"`;
+    case "RenameIndex":
+      return `RENAME INDEX "${change.name}" TO "${change.newName}"`;
+    case "CreateEnum":
+      return `CREATE ENUM "${change.enum}" (${change.values.map((v) => `'${v}'`).join(", ")})`;
+    case "DropEnum":
+      return `DROP ENUM "${change.enum}"`;
+    case "AddEnumValue":
+      return `ADD VALUE '${change.value}' TO ENUM "${change.enum}"`;
+    case "RenameEnum":
+      return `RENAME ENUM "${change.enum}" TO "${change.newName}"`;
+    case "UpdateRows":
+      return `UPDATE "${change.table}" SET ${quoted(change.columns)}`;
+    case "DeleteRows":
+      return change.via === "delete"
+        ? `DELETE FROM "${change.table}"`
+        : `TRUNCATE "${change.table}"`;
     case "Unrecognized":
       return `unrecognized ${change.statement}`;
     default: {
@@ -40,6 +72,17 @@ export function describeChange(change: Change): string {
       return missing;
     }
   }
+}
+
+const CONSTRAINT_WORDS = {
+  unique: "UNIQUE",
+  primaryKey: "PRIMARY KEY",
+  check: "CHECK",
+  foreignKey: "FOREIGN KEY",
+} as const;
+
+function quoted(names: readonly string[]): string {
+  return names.map((n) => `"${n}"`).join(", ");
 }
 
 function column(change: { readonly table: string; readonly column: string }): string {
