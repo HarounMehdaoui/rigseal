@@ -29,4 +29,14 @@ export interface EditedMigration {
   readonly source: MigrationSource;
 }
 
-export type Change = EditedMigration;
+/** A migration Postgres's parser rejects as a whole (RG-DB-021, D20). */
+export interface Unparsable {
+  readonly kind: "Unparsable";
+  /** The parser's own message, quoted in the finding. */
+  readonly message: string;
+  /** 1-based line the parser stopped at, when it says. */
+  readonly line: number | null;
+  readonly source: MigrationSource;
+}
+
+export type Change = EditedMigration | Unparsable;

@@ -18,6 +18,7 @@
     "vitest": "5.1.0"
   },
   "dependencies": {
-    "@prisma/get-dmmf": "7.10.1"
+    "@prisma/get-dmmf": "7.10.1",
+    "libpg-query": "18.2.2"
   }
 }
