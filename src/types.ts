@@ -1,5 +1,5 @@
 // Core types shared by the pipeline (docs/ARCHITECTURE.md "Core types"). Only what exists so far:
-// Day 3 adds the statement source and the SQL changes to these unions.
+// T3.3 adds the constraint, index, enum and data changes to the Change union.
 
 export type Severity = "SAFE" | "RISKY" | "UNSAFE";
 
@@ -10,7 +10,17 @@ export interface MigrationSource {
   readonly migration: string;
 }
 
-export type Source = MigrationSource;
+/** Where an entry comes from: one action of one statement in a migration. */
+export interface StatementSource {
+  readonly kind: "statement";
+  readonly migration: string;
+  /** 1-based line where the statement starts. */
+  readonly line: number;
+  /** Which action of the statement, from 0: `ALTER TABLE … DROP x, ADD y` has actions 0 and 1. */
+  readonly action: number;
+}
+
+export type Source = MigrationSource | StatementSource;
 
 /** One rule's judgement. RISKY or UNSAFE makes it a finding; SAFE makes it a note. */
 export interface Entry {
@@ -39,4 +49,98 @@ export interface Unparsable {
   readonly source: MigrationSource;
 }
 
-export type Change = EditedMigration | Unparsable;
+/** A Postgres type in its internal spelling: `VARCHAR(255)` → `{ name: "varchar", args: ["255"] }`. */
+export interface PgType {
+  readonly name: string;
+  readonly args: readonly string[];
+  readonly array: boolean;
+}
+
+interface TableChange {
+  /** Table name in the public schema (RULES §2: other schemas become Unrecognized). */
+  readonly table: string;
+  readonly source: StatementSource;
+}
+
+interface ColumnChange extends TableChange {
+  readonly column: string;
+}
+
+export interface CreateTable extends TableChange {
+  readonly kind: "CreateTable";
+}
+
+export interface DropTable extends TableChange {
+  readonly kind: "DropTable";
+}
+
+export interface RenameTable extends TableChange {
+  readonly kind: "RenameTable";
+  readonly newName: string;
+}
+
+export interface AddColumn extends ColumnChange {
+  readonly kind: "AddColumn";
+  readonly type: PgType;
+  readonly notNull: boolean;
+  /** The database fills a value: `DEFAULT`, `SERIAL` or an identity/generated column. */
+  readonly hasDefault: boolean;
+}
+
+export interface DropColumn extends ColumnChange {
+  readonly kind: "DropColumn";
+}
+
+export interface RenameColumn extends ColumnChange {
+  readonly kind: "RenameColumn";
+  readonly newName: string;
+}
+
+export interface AlterColumnType extends ColumnChange {
+  readonly kind: "AlterColumnType";
+  readonly type: PgType;
+  /** `USING <expr>`: the cast is custom, so the change is never a known widening (RG-DB-008). */
+  readonly using: boolean;
+}
+
+export interface SetNotNull extends ColumnChange {
+  readonly kind: "SetNotNull";
+}
+
+export interface DropNotNull extends ColumnChange {
+  readonly kind: "DropNotNull";
+}
+
+export interface SetDefault extends ColumnChange {
+  readonly kind: "SetDefault";
+}
+
+export interface DropDefault extends ColumnChange {
+  readonly kind: "DropDefault";
+}
+
+/** A statement (or one action of it) that parsed but that no normalizer models (RG-DB-022, D13). */
+export interface Unrecognized {
+  readonly kind: "Unrecognized";
+  /** What it is, e.g. `CreateFunctionStmt` or `AlterTableStmt/AT_AddConstraint`. */
+  readonly statement: string;
+  /** Why it isn't modelled, e.g. "schema audit is not public". */
+  readonly reason: string;
+  readonly source: StatementSource;
+}
+
+export type Change =
+  | EditedMigration
+  | Unparsable
+  | CreateTable
+  | DropTable
+  | RenameTable
+  | AddColumn
+  | DropColumn
+  | RenameColumn
+  | AlterColumnType
+  | SetNotNull
+  | DropNotNull
+  | SetDefault
+  | DropDefault
+  | Unrecognized;

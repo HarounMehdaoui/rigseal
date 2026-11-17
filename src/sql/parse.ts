@@ -2,6 +2,19 @@
 import { hasSqlDetails, type Node, parse } from "libpg-query";
 import { byteOffsetToLine, codePointToLine } from "./line-index.ts";
 
+// The AST types the normalizer reads, re-exported so this stays the one door to libpg-query (D38).
+export type {
+  AlterTableCmd,
+  AlterTableStmt,
+  ColumnDef,
+  CreateStmt,
+  DropStmt,
+  Node,
+  RangeVar,
+  RenameStmt,
+  TypeName,
+} from "libpg-query";
+
 export interface Statement {
   /** libpg-query's AST node, e.g. `{ AlterTableStmt: {…} }`. */
   readonly node: Node;
