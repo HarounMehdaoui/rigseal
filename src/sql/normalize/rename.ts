@@ -1,4 +1,4 @@
-// Turns a hand-written RENAME of a table, column, index or enum into its Rename… change.
+// Turns a RENAME of a table, column, index, constraint or enum into its Rename… change.
 import type { Change, StatementSource } from "../../types.ts";
 import type { RenameStmt } from "../parse.ts";
 import { fromNameParts, fromRangeVar, type NameRef } from "./qualified-name.ts";
@@ -42,6 +42,17 @@ export function rename(stmt: RenameStmt, source: StatementSource): Change {
         newName,
         source,
       }));
+    case "OBJECT_TABCONSTRAINT": {
+      // Prisma renames a primary or foreign key this way (RULES §6 row 10); base never names them.
+      const name = stmt.subname;
+      if (name === undefined) return unrecognized(what, "the constraint could not be read", source);
+      return named(fromRangeVar(stmt.relation), () => ({
+        kind: "RenameIndex",
+        name,
+        newName,
+        source,
+      }));
+    }
     case "OBJECT_TYPE":
       return named(fromNameParts(stmt.object), (name) => ({
         kind: "RenameEnum",

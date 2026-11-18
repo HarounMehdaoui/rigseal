@@ -227,6 +227,13 @@ describe("normalize: constraints, indexes and enums, real Prisma output", () => 
     ]);
   });
 
+  it("a primary- or foreign-key rename (RENAME CONSTRAINT) → RenameIndex (RULES §6 row 10)", async () => {
+    expect((await changes(fixture("rename-constraints"))).map(what)).toEqual([
+      { kind: "RenameIndex", name: "User_pkey", newName: "user_pk" },
+      { kind: "RenameIndex", name: "Post_authorId_fkey", newName: "post_author_fk" },
+    ]);
+  });
+
   it("a new relation → AddConstraint foreignKey on the referencing columns", async () => {
     expect((await changes(fixture("add-foreign-key"))).map(what)).toEqual([
       {
