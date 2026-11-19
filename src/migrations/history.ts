@@ -1,11 +1,6 @@
 // Compares base's migration folders with head's: new, unchanged, modified or removed (D9, D18).
+import type { MigrationFolder } from "../types.ts";
 import { fingerprint } from "./fingerprint.ts";
-
-/** One migration folder as read at a ref: its name and its `migration.sql`. */
-export interface MigrationFolder {
-  readonly name: string;
-  readonly sql: string;
-}
 
 export type MigrationStatus = "new" | "unchanged" | "modified" | "removed";
 

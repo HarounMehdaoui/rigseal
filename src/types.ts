@@ -3,6 +3,19 @@
 
 export type Severity = "SAFE" | "RISKY" | "UNSAFE";
 
+/** One migration folder as read at a ref: its name and its `migration.sql`. */
+export interface MigrationFolder {
+  readonly name: string;
+  readonly sql: string;
+}
+
+/** One side (base or head) as the pure core sees it: no git, no files (D4). */
+export interface Snapshot {
+  /** The text of `schema.prisma`. */
+  readonly schema: string;
+  readonly migrations: readonly MigrationFolder[];
+}
+
 /** Where an entry comes from: a whole migration (history diff, unparsable file). */
 export interface MigrationSource {
   readonly kind: "migration";

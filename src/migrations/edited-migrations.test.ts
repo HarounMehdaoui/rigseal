@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
+import type { MigrationFolder } from "../types.ts";
 import { editedMigrations } from "./edited-migrations.ts";
-import { diffHistory, type MigrationFolder } from "./history.ts";
+import { diffHistory } from "./history.ts";
 
 const INIT = 'CREATE TABLE "User" (\n    "id" SERIAL NOT NULL\n);\n';
 const PHONE = 'ALTER TABLE "User" ADD COLUMN "phone" TEXT;\n';

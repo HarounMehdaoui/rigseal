@@ -1,0 +1,16 @@
+{
+  "verdict": "SAFE",
+  "entries": [
+    {
+      "ruleId": "RG-DB-002",
+      "severity": "SAFE",
+      "target": "User.name",
+      "source": {
+        "kind": "statement",
+        "migration": "20261105000000_drop_name",
+        "line": 2,
+        "action": 0
+      }
+    }
+  ]
+}

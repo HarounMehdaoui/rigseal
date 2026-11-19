@@ -1,0 +1,27 @@
+{
+  "verdict": "SAFE",
+  "entries": [
+    {
+      "ruleId": "RG-DB-005",
+      "severity": "SAFE",
+      "target": "User.fullName",
+      "source": {
+        "kind": "statement",
+        "migration": "20261102000000_expand_full_name",
+        "line": 2,
+        "action": 0
+      }
+    },
+    {
+      "ruleId": "RG-DB-018",
+      "severity": "SAFE",
+      "target": "User",
+      "source": {
+        "kind": "statement",
+        "migration": "20261102000000_expand_full_name",
+        "line": 5,
+        "action": 0
+      }
+    }
+  ]
+}

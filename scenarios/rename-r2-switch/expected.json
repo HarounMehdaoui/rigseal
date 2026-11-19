@@ -1,0 +1,27 @@
+{
+  "verdict": "RISKY",
+  "entries": [
+    {
+      "ruleId": "RG-DB-010",
+      "severity": "RISKY",
+      "target": "User.name",
+      "source": {
+        "kind": "statement",
+        "migration": "20261103000000_switch_to_full_name",
+        "line": 2,
+        "action": 0
+      }
+    },
+    {
+      "ruleId": "RG-DB-018",
+      "severity": "RISKY",
+      "target": "User",
+      "source": {
+        "kind": "statement",
+        "migration": "20261103000000_switch_to_full_name",
+        "line": 5,
+        "action": 0
+      }
+    }
+  ]
+}
