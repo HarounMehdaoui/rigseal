@@ -1,0 +1,93 @@
+{
+  "verdict": "UNSAFE",
+  "entries": [
+    {
+      "ruleId": "RG-DB-000",
+      "severity": "SAFE",
+      "target": "Role_new",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_remove_guest_by_hand",
+        "line": 3,
+        "action": 0
+      }
+    },
+    {
+      "ruleId": "RG-DB-011",
+      "severity": "SAFE",
+      "target": "User.role",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_remove_guest_by_hand",
+        "line": 4,
+        "action": 0
+      }
+    },
+    {
+      "ruleId": "RG-DB-008",
+      "severity": "UNSAFE",
+      "target": "User.role",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_remove_guest_by_hand",
+        "line": 5,
+        "action": 0
+      }
+    },
+    {
+      "ruleId": "RG-DB-008",
+      "severity": "UNSAFE",
+      "target": "User.roles",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_remove_guest_by_hand",
+        "line": 6,
+        "action": 0
+      }
+    },
+    {
+      "ruleId": "RG-DB-008",
+      "severity": "UNSAFE",
+      "target": "User.other",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_remove_guest_by_hand",
+        "line": 7,
+        "action": 0
+      }
+    },
+    {
+      "ruleId": "RG-DB-017",
+      "severity": "UNSAFE",
+      "target": "Role",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_remove_guest_by_hand",
+        "line": 8,
+        "action": 0
+      }
+    },
+    {
+      "ruleId": "RG-DB-017",
+      "severity": "SAFE",
+      "target": "Role_new",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_remove_guest_by_hand",
+        "line": 9,
+        "action": 0
+      }
+    },
+    {
+      "ruleId": "RG-DB-000",
+      "severity": "SAFE",
+      "target": "User.role",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_remove_guest_by_hand",
+        "line": 10,
+        "action": 0
+      }
+    }
+  ]
+}

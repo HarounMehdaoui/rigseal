@@ -1,5 +1,4 @@
-// Core types shared by the pipeline (docs/ARCHITECTURE.md "Core types"). Only what exists so far:
-// T5.2 adds RemoveEnumValue (the enum-recreate recognizer).
+// Core types shared by the pipeline (docs/ARCHITECTURE.md "Core types").
 
 export type Severity = "SAFE" | "RISKY" | "UNSAFE";
 
@@ -194,6 +193,14 @@ export interface AddEnumValue {
   readonly source: StatementSource;
 }
 
+/** Produced only by the enum-recreate recognizer: Postgres has no DROP VALUE (RG-DB-016). */
+export interface RemoveEnumValue {
+  readonly kind: "RemoveEnumValue";
+  readonly enum: string;
+  readonly value: string;
+  readonly source: StatementSource;
+}
+
 export interface RenameEnum {
   readonly kind: "RenameEnum";
   readonly enum: string;
@@ -245,6 +252,7 @@ export type Change =
   | CreateEnum
   | DropEnum
   | AddEnumValue
+  | RemoveEnumValue
   | RenameEnum
   | UpdateRows
   | DeleteRows

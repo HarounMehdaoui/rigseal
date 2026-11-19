@@ -1,0 +1,16 @@
+{
+  "verdict": "RISKY",
+  "entries": [
+    {
+      "ruleId": "RG-DB-016",
+      "severity": "RISKY",
+      "target": "Role.GUEST",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_remove_guest",
+        "line": 3,
+        "action": 0
+      }
+    }
+  ]
+}

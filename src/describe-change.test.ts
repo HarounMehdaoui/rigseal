@@ -115,6 +115,10 @@ describe("describeChange: one line per change kind", () => {
       "ADD VALUE 'GUEST' TO ENUM \"Role\"",
     ],
     [
+      { kind: "RemoveEnumValue", enum: "Role", value: "GUEST", source: at },
+      "REMOVE VALUE 'GUEST' FROM ENUM \"Role\"",
+    ],
+    [
       { kind: "RenameEnum", enum: "Role", newName: "user_role", source: at },
       'RENAME ENUM "Role" TO "user_role"',
     ],

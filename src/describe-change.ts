@@ -57,6 +57,8 @@ export function describeChange(change: Change): string {
       return `DROP ENUM "${change.enum}"`;
     case "AddEnumValue":
       return `ADD VALUE '${change.value}' TO ENUM "${change.enum}"`;
+    case "RemoveEnumValue":
+      return `REMOVE VALUE '${change.value}' FROM ENUM "${change.enum}"`;
     case "RenameEnum":
       return `RENAME ENUM "${change.enum}" TO "${change.newName}"`;
     case "UpdateRows":

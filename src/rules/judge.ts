@@ -10,6 +10,7 @@ import { dropTable } from "./drop-table.ts";
 import { editedMigration } from "./edited-migration.ts";
 import { enumRenamed } from "./enum-renamed.ts";
 import { enumValueAdded } from "./enum-value-added.ts";
+import { enumValueRemoved } from "./enum-value-removed.ts";
 import { foreignKey } from "./foreign-key.ts";
 import { harmlessChange } from "./harmless-change.ts";
 import { renameColumn } from "./rename-column.ts";
@@ -57,6 +58,8 @@ export function judge(change: Change, context: RuleContext): Entry {
       return uniqueConstraint(change, context);
     case "AddEnumValue":
       return enumValueAdded(change, context);
+    case "RemoveEnumValue":
+      return enumValueRemoved(change, context);
     case "RenameEnum":
       return enumRenamed(change, context);
     case "UpdateRows":
