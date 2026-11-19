@@ -1,0 +1,16 @@
+{
+  "verdict": "UNSAFE",
+  "entries": [
+    {
+      "ruleId": "RG-DB-008",
+      "severity": "UNSAFE",
+      "target": "User.note",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_note_to_integer",
+        "line": 2,
+        "action": 0
+      }
+    }
+  ]
+}

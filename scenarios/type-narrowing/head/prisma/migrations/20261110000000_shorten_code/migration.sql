@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "User" ALTER COLUMN "code" SET DATA TYPE VARCHAR(50);
+

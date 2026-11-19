@@ -1,5 +1,6 @@
 // Sends each change to the rule that judges its kind; every change gets exactly one entry (D21, D28).
 import type { Change, Entry } from "../types.ts";
+import { alterColumnType } from "./alter-column-type.ts";
 import type { RuleContext } from "./context.ts";
 import { dropColumn } from "./drop-column.ts";
 import { dropTable } from "./drop-table.ts";
@@ -26,10 +27,11 @@ export function judge(change: Change, context: RuleContext): Entry {
       return renameColumn(change, context);
     case "AddColumn":
       return requiredColumnAdded(change, context);
-    // Rules still to come: T4.3 (types), T4.4 (nullability, defaults),
+    case "AlterColumnType":
+      return alterColumnType(change, context);
+    // Rules still to come: T4.4 (nullability, defaults),
     // T5.1 (constraints, enums, data, Unrecognized), and RG-DB-000 notes for kinds with no rule.
     case "CreateTable":
-    case "AlterColumnType":
     case "SetNotNull":
     case "DropNotNull":
     case "SetDefault":

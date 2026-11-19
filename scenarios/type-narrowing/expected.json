@@ -1,0 +1,16 @@
+{
+  "verdict": "RISKY",
+  "entries": [
+    {
+      "ruleId": "RG-DB-006",
+      "severity": "RISKY",
+      "target": "User.code",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_shorten_code",
+        "line": 2,
+        "action": 0
+      }
+    }
+  ]
+}

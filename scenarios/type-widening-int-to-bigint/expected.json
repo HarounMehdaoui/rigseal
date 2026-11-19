@@ -1,0 +1,16 @@
+{
+  "verdict": "RISKY",
+  "entries": [
+    {
+      "ruleId": "RG-DB-007",
+      "severity": "RISKY",
+      "target": "User.views",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_views_to_bigint",
+        "line": 2,
+        "action": 0
+      }
+    }
+  ]
+}
