@@ -1,0 +1,16 @@
+{
+  "verdict": "UNSAFE",
+  "entries": [
+    {
+      "ruleId": "RG-DB-001",
+      "severity": "UNSAFE",
+      "target": "Post",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_drop_post",
+        "line": 2,
+        "action": 0
+      }
+    }
+  ]
+}

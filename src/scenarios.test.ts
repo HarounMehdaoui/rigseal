@@ -1,6 +1,6 @@
 // Scenario tests: each folder under scenarios/ runs through the pure core with no git (PLAN §5, D41).
-// The north star (T4.1) is the four-release rename from RULES §5. Until Days 4-5 build its rules and
-// the verdict, it is `it.fails` (D39): it passes only while it fails, and goes red the day it passes.
+// The north star (T4.1) is the four-release rename from RULES §5. A scenario whose rules don't exist
+// yet is `it.fails` (D39): it passes only while it fails, and goes red the day it passes.
 import { describe, expect, it } from "vitest";
 import { analyze } from "./analyze.ts";
 import { loadScenario, scenarioNames } from "./scenario-files.ts";
@@ -14,6 +14,9 @@ const NORTH_STAR = [
   "rename-r3-retire",
   "rename-r4-contract",
 ];
+
+/** Still waiting for rules: R1 needs RG-DB-018 (T5.1), R2 needs RG-DB-010 (T4.4) and RG-DB-018. */
+const PENDING = ["rename-r1-expand", "rename-r2-switch"];
 
 describe("scenario inputs are sound (so it.fails can't hide a broken fixture)", () => {
   it.each(scenarioNames())("%s: both schemas read and every migration parses", async (name) => {
@@ -46,6 +49,10 @@ async function run(name: string) {
   expect(actual).toEqual(expected);
 }
 
-describe("north star: renaming User.name to User.fullName in four releases (RULES §5)", () => {
-  it.fails.each(NORTH_STAR)("%s (D39: expected to fail until Day 5)", run);
+describe("scenarios", () => {
+  it.each(scenarioNames().filter((name) => !PENDING.includes(name)))("%s", run);
+});
+
+describe("north star, still pending (RULES §5)", () => {
+  it.fails.each(PENDING)("%s (D39: expected to fail until its rules exist)", run);
 });

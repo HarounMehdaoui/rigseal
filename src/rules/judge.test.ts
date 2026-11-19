@@ -17,13 +17,23 @@ describe("judge", () => {
     expect(judge(change, context)).toMatchObject({ ruleId: "RG-DB-021", severity: "UNSAFE" });
   });
 
-  it("names the missing rule for a kind no rule judges yet", () => {
+  it("sends a dropped column to RG-DB-002 with the context", () => {
     const change: Change = {
       kind: "DropColumn",
       table: "User",
       column: "name",
       source: { kind: "statement", migration: "2_drop", line: 1, action: 0 },
     };
-    expect(() => judge(change, context)).toThrow("no rule for DropColumn yet");
+    expect(judge(change, context)).toMatchObject({ ruleId: "RG-DB-002", severity: "SAFE" });
+  });
+
+  it("names the missing rule for a kind no rule judges yet", () => {
+    const change: Change = {
+      kind: "SetDefault",
+      table: "User",
+      column: "name",
+      source: { kind: "statement", migration: "2_set", line: 1, action: 0 },
+    };
+    expect(() => judge(change, context)).toThrow("no rule for SetDefault yet");
   });
 });

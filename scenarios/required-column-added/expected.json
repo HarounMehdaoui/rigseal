@@ -1,0 +1,16 @@
+{
+  "verdict": "UNSAFE",
+  "entries": [
+    {
+      "ruleId": "RG-DB-005",
+      "severity": "UNSAFE",
+      "target": "User.phone",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_add_phone",
+        "line": 2,
+        "action": 0
+      }
+    }
+  ]
+}

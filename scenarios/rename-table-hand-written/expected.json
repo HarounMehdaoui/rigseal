@@ -1,0 +1,16 @@
+{
+  "verdict": "UNSAFE",
+  "entries": [
+    {
+      "ruleId": "RG-DB-003",
+      "severity": "UNSAFE",
+      "target": "User",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_rename_user_to_person",
+        "line": 2,
+        "action": 0
+      }
+    }
+  ]
+}
