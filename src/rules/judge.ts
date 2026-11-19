@@ -3,11 +3,15 @@ import type { Change, Entry } from "../types.ts";
 import { alterColumnType } from "./alter-column-type.ts";
 import type { RuleContext } from "./context.ts";
 import { dropColumn } from "./drop-column.ts";
+import { dropDefault } from "./drop-default.ts";
+import { dropNotNull } from "./drop-not-null.ts";
 import { dropTable } from "./drop-table.ts";
 import { editedMigration } from "./edited-migration.ts";
+import { harmlessChange } from "./harmless-change.ts";
 import { renameColumn } from "./rename-column.ts";
 import { renameTable } from "./rename-table.ts";
 import { requiredColumnAdded } from "./required-column-added.ts";
+import { setNotNull } from "./set-not-null.ts";
 import { unparsable } from "./unparsable.ts";
 
 /** The `switch` is exhaustive: a new Change kind without a case here fails to compile. */
@@ -29,13 +33,16 @@ export function judge(change: Change, context: RuleContext): Entry {
       return requiredColumnAdded(change, context);
     case "AlterColumnType":
       return alterColumnType(change, context);
-    // Rules still to come: T4.4 (nullability, defaults),
-    // T5.1 (constraints, enums, data, Unrecognized), and RG-DB-000 notes for kinds with no rule.
-    case "CreateTable":
     case "SetNotNull":
+      return setNotNull(change, context);
     case "DropNotNull":
-    case "SetDefault":
+      return dropNotNull(change, context);
     case "DropDefault":
+      return dropDefault(change, context);
+    case "SetDefault":
+      return harmlessChange(change);
+    // Rules still to come: T5.1 (constraints, enums, data, Unrecognized), and RG-DB-000 notes for kinds with no rule.
+    case "CreateTable":
     case "AddConstraint":
     case "DropConstraint":
     case "CreateUniqueIndex":

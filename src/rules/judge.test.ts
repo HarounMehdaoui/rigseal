@@ -29,11 +29,11 @@ describe("judge", () => {
 
   it("names the missing rule for a kind no rule judges yet", () => {
     const change: Change = {
-      kind: "SetDefault",
+      kind: "CreateIndex",
       table: "User",
-      column: "name",
-      source: { kind: "statement", migration: "2_set", line: 1, action: 0 },
+      name: null,
+      source: { kind: "statement", migration: "2_index", line: 1, action: 0 },
     };
-    expect(() => judge(change, context)).toThrow("no rule for SetDefault yet");
+    expect(() => judge(change, context)).toThrow("no rule for CreateIndex yet");
   });
 });

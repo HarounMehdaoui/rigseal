@@ -1,0 +1,60 @@
+{
+  "verdict": "UNSAFE",
+  "entries": [
+    {
+      "ruleId": "RG-DB-002",
+      "severity": "UNSAFE",
+      "target": "User.name",
+      "source": {
+        "kind": "statement",
+        "migration": "20261116130000_fullname_phone",
+        "line": 8,
+        "action": 0
+      }
+    },
+    {
+      "ruleId": "RG-DB-005",
+      "severity": "UNSAFE",
+      "target": "User.fullName",
+      "source": {
+        "kind": "statement",
+        "migration": "20261116130000_fullname_phone",
+        "line": 8,
+        "action": 1
+      }
+    },
+    {
+      "ruleId": "RG-DB-005",
+      "severity": "UNSAFE",
+      "target": "User.phone",
+      "source": {
+        "kind": "statement",
+        "migration": "20261116130000_fullname_phone",
+        "line": 8,
+        "action": 2
+      }
+    },
+    {
+      "ruleId": "RG-DB-011",
+      "severity": "SAFE",
+      "target": "User.fullName",
+      "source": {
+        "kind": "statement",
+        "migration": "20261116130000_fullname_phone",
+        "line": 12,
+        "action": 0
+      }
+    },
+    {
+      "ruleId": "RG-DB-011",
+      "severity": "SAFE",
+      "target": "User.phone",
+      "source": {
+        "kind": "statement",
+        "migration": "20261116130000_fullname_phone",
+        "line": 12,
+        "action": 1
+      }
+    }
+  ]
+}

@@ -15,7 +15,7 @@ const NORTH_STAR = [
   "rename-r4-contract",
 ];
 
-/** Still waiting for rules: R1 needs RG-DB-018 (T5.1), R2 needs RG-DB-010 (T4.4) and RG-DB-018. */
+/** Still waiting for rules: R1 and R2 both need RG-DB-018 (UPDATE, T5.1). */
 const PENDING = ["rename-r1-expand", "rename-r2-switch"];
 
 describe("scenario inputs are sound (so it.fails can't hide a broken fixture)", () => {

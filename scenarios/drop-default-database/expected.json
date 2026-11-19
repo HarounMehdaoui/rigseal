@@ -1,0 +1,27 @@
+{
+  "verdict": "UNSAFE",
+  "entries": [
+    {
+      "ruleId": "RG-DB-011",
+      "severity": "UNSAFE",
+      "target": "User.slug",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_drop_db_defaults",
+        "line": 2,
+        "action": 0
+      }
+    },
+    {
+      "ruleId": "RG-DB-011",
+      "severity": "UNSAFE",
+      "target": "User.seq",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_drop_db_defaults",
+        "line": 2,
+        "action": 1
+      }
+    }
+  ]
+}

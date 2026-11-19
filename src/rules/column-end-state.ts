@@ -1,5 +1,5 @@
-// Follows a column added in this release through head's later changes to where it ends up (D33).
-import type { AddColumn } from "../types.ts";
+// Follows a column through a release's changes (renames, NOT NULL, defaults, drops) to where it ends up (D33).
+import type { AddColumn, Change } from "../types.ts";
 import type { RuleContext } from "./context.ts";
 
 export interface ColumnEndState {
@@ -9,18 +9,31 @@ export interface ColumnEndState {
   readonly hasDefault: boolean;
 }
 
-/**
- * Only changes after `added` in the release count. Renames are followed, so a column that is added,
- * renamed and then has its default dropped is still tracked.
- */
-export function columnEndState(added: AddColumn, context: RuleContext): ColumnEndState {
-  let table = added.table;
-  let column = added.column;
-  let notNull = added.notNull;
-  let hasDefault = added.hasDefault;
+/** Where a column starts: as added, or as base's schema has it. */
+export interface ColumnStart {
+  readonly table: string;
+  readonly column: string;
+  readonly notNull: boolean;
+  readonly hasDefault: boolean;
+}
 
+/** A column added in this release: only the changes after the ADD count (D33). */
+export function columnEndState(added: AddColumn, context: RuleContext): ColumnEndState {
   const index = context.changes.indexOf(added);
-  for (const change of index === -1 ? [] : context.changes.slice(index + 1)) {
+  return followColumn(added, index === -1 ? [] : context.changes.slice(index + 1));
+}
+
+/**
+ * Applies `changes` in order. Renames are followed, so a column that is renamed and then has its
+ * default dropped is still tracked.
+ */
+export function followColumn(start: ColumnStart, changes: readonly Change[]): ColumnEndState {
+  let table = start.table;
+  let column = start.column;
+  let notNull = start.notNull;
+  let hasDefault = start.hasDefault;
+
+  for (const change of changes) {
     if (change.kind === "RenameTable" && change.table === table) table = change.newName;
     if (change.kind === "DropTable" && change.table === table) {
       return { exists: false, notNull, hasDefault };
