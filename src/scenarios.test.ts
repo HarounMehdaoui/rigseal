@@ -1,6 +1,6 @@
 // Scenario tests: each folder under scenarios/ runs through the pure core with no git (PLAN §5, D41).
-// The north star (T4.1) is the four-release rename from RULES §5. A scenario whose rules don't exist
-// yet is `it.fails` (D39): it passes only while it fails, and goes red the day it passes.
+// The north star (T4.1) is the four-release rename from RULES §5, expecting SAFE, RISKY, SAFE, SAFE.
+// While its rules were missing it ran as `it.fails` (D39); since T5.1 every scenario is a normal test.
 import { describe, expect, it } from "vitest";
 import { analyze } from "./analyze.ts";
 import { loadScenario, scenarioNames } from "./scenario-files.ts";
@@ -15,10 +15,7 @@ const NORTH_STAR = [
   "rename-r4-contract",
 ];
 
-/** Still waiting for rules: R1 and R2 both need RG-DB-018 (UPDATE, T5.1). */
-const PENDING = ["rename-r1-expand", "rename-r2-switch"];
-
-describe("scenario inputs are sound (so it.fails can't hide a broken fixture)", () => {
+describe("scenario inputs are sound", () => {
   it.each(scenarioNames())("%s: both schemas read and every migration parses", async (name) => {
     const { base, head } = loadScenario(name);
     buildUsedSet(base.schema);
@@ -50,9 +47,5 @@ async function run(name: string) {
 }
 
 describe("scenarios", () => {
-  it.each(scenarioNames().filter((name) => !PENDING.includes(name)))("%s", run);
-});
-
-describe("north star, still pending (RULES §5)", () => {
-  it.fails.each(PENDING)("%s (D39: expected to fail until its rules exist)", run);
+  it.each(scenarioNames())("%s", run);
 });

@@ -1,5 +1,7 @@
+import { readdirSync, readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import type { UsedSet } from "../schema/types.ts";
+import { migrationChanges } from "../sql/migration-changes.ts";
 import type { Change } from "../types.ts";
 import { judge } from "./judge.ts";
 
@@ -27,13 +29,16 @@ describe("judge", () => {
     expect(judge(change, context)).toMatchObject({ ruleId: "RG-DB-002", severity: "SAFE" });
   });
 
-  it("names the missing rule for a kind no rule judges yet", () => {
-    const change: Change = {
-      kind: "CreateIndex",
-      table: "User",
-      name: null,
-      source: { kind: "statement", migration: "2_index", line: 1, action: 0 },
-    };
-    expect(() => judge(change, context)).toThrow("no rule for CreateIndex yet");
+  it("gives every change of every normalizer fixture exactly one entry, at the change's own source (D28)", async () => {
+    const dir = new URL("../sql/normalize/fixtures/", import.meta.url);
+    const used = { tables: new Map(), enums: new Map() } satisfies UsedSet;
+    let total = 0;
+    for (const file of readdirSync(dir)) {
+      const changes = await migrationChanges(file, readFileSync(new URL(file, dir), "utf8"));
+      const entries = changes.map((change) => judge(change, { used, changes }));
+      expect(entries.map((e) => e.source)).toEqual(changes.map((c) => c.source));
+      total += changes.length;
+    }
+    expect(total).toBeGreaterThan(40);
   });
 });

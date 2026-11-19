@@ -1,0 +1,16 @@
+{
+  "verdict": "RISKY",
+  "entries": [
+    {
+      "ruleId": "RG-DB-012",
+      "severity": "RISKY",
+      "target": "User_email_key",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_unique_email",
+        "line": 2,
+        "action": 0
+      }
+    }
+  ]
+}

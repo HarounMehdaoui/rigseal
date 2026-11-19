@@ -1,0 +1,38 @@
+{
+  "verdict": "SAFE",
+  "entries": [
+    {
+      "ruleId": "RG-DB-000",
+      "severity": "SAFE",
+      "target": "Plan",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_team_plan_age_index",
+        "line": 2,
+        "action": 0
+      }
+    },
+    {
+      "ruleId": "RG-DB-000",
+      "severity": "SAFE",
+      "target": "Team",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_team_plan_age_index",
+        "line": 5,
+        "action": 0
+      }
+    },
+    {
+      "ruleId": "RG-DB-000",
+      "severity": "SAFE",
+      "target": "User_age_idx",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_team_plan_age_index",
+        "line": 13,
+        "action": 0
+      }
+    }
+  ]
+}

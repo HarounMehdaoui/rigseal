@@ -1,0 +1,26 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+model User {
+  id    Int    @id @default(autoincrement())
+  email String
+  age   Int
+
+  @@index([age])
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
+model Team {
+  id   Int  @id @default(autoincrement())
+  plan Plan @default(FREE)
+}

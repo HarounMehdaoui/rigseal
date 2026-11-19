@@ -1,0 +1,16 @@
+{
+  "verdict": "RISKY",
+  "entries": [
+    {
+      "ruleId": "RG-DB-014",
+      "severity": "RISKY",
+      "target": "Post_authorId_fkey",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_post_author_fk",
+        "line": 2,
+        "action": 0
+      }
+    }
+  ]
+}

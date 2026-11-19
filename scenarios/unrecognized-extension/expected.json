@@ -1,0 +1,16 @@
+{
+  "verdict": "RISKY",
+  "entries": [
+    {
+      "ruleId": "RG-DB-022",
+      "severity": "RISKY",
+      "target": "CreateExtensionStmt",
+      "source": {
+        "kind": "statement",
+        "migration": "20261110000000_pgcrypto",
+        "line": 2,
+        "action": 0
+      }
+    }
+  ]
+}
