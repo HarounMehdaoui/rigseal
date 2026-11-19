@@ -1,4 +1,6 @@
 // Compares base's migration folders with head's: new, unchanged, modified or removed (D9, D18).
+
+import { byCodeUnit } from "../compare.ts";
 import type { MigrationFolder } from "../types.ts";
 import { fingerprint } from "./fingerprint.ts";
 
@@ -37,10 +39,4 @@ function status(base: string | null, head: string | null): MigrationStatus {
   if (base === null) return "new";
   if (head === null) return "removed";
   return base === head ? "unchanged" : "modified";
-}
-
-/** Plain code-unit order, never `localeCompare`: the result must not depend on the machine's locale. */
-function byCodeUnit(a: string, b: string): number {
-  if (a < b) return -1;
-  return a > b ? 1 : 0;
 }

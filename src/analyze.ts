@@ -1,6 +1,7 @@
-// The pure core: base and head snapshots → one entry per change (history diff, parse, normalize, judge).
+// The pure core: base and head snapshots → one entry per change, in D29 order (history, parse, normalize, judge).
 import { editedMigrations } from "./migrations/edited-migrations.ts";
 import { diffHistory } from "./migrations/history.ts";
+import { sortEntries } from "./order.ts";
 import { judge } from "./rules/judge.ts";
 import { buildUsedSet } from "./schema/used-set.ts";
 import { migrationChanges } from "./sql/migration-changes.ts";
@@ -27,5 +28,5 @@ export async function analyze(base: Snapshot, head: Snapshot): Promise<Entry[]> 
   }
 
   const context = { used, changes };
-  return changes.map((change) => judge(change, context));
+  return sortEntries(changes.map((change) => judge(change, context)));
 }
