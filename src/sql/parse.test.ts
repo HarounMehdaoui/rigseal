@@ -40,6 +40,11 @@ describe("parseSql: valid SQL", () => {
   it("gives no statements for a file of comments only", async () => {
     expect(await parsed("-- This is an empty migration.\n")).toEqual([]);
   });
+
+  it("gives no statements for an empty file, like a whitespace-only one", async () => {
+    expect(await parsed("")).toEqual([]);
+    expect(await parsed(" \n")).toEqual([]);
+  });
 });
 
 describe("parseSql: SQL Postgres rejects", () => {

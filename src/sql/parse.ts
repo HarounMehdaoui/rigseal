@@ -47,6 +47,10 @@ export interface ParseFailure {
  * failure and propagates (exit 2).
  */
 export async function parseSql(sql: string): Promise<ParsedSql | ParseFailure> {
+  // libpg-query's wrapper throws "Query cannot be empty" before Postgres's grammar runs; Postgres
+  // reads "" like whitespace: no statements. An empty migration.sql changes nothing.
+  if (sql === "") return { kind: "parsed", statements: [] };
+
   let result: Awaited<ReturnType<typeof parse>>;
   try {
     result = await parse(sql);
