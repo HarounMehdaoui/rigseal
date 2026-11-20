@@ -3,11 +3,8 @@ import { UsageError } from "../cli/usage-error.ts";
 import { parseVerifyArgs } from "./args.ts";
 
 const SHA = "0123456789abcdef0123456789abcdef01234567";
-const ALL = [
-  "--report",
-  "r.json",
-  "--bundle",
-  "r.sigstore.json",
+const FILES = ["--report", "r.json", "--bundle", "r.sigstore.json"];
+const SIGNER = [
   "--repository",
   "acme/shop",
   "--workflow",
@@ -17,23 +14,42 @@ const ALL = [
   "--sha",
   SHA,
 ];
+const ALL = [...FILES, ...SIGNER];
+const EXPECTED_SIGNER = {
+  identity: "https://github.com/acme/shop/.github/workflows/rollback-gate.yml@refs/heads/main",
+  repository: "acme/shop",
+  ref: "refs/heads/main",
+};
 
 describe("parseVerifyArgs", () => {
-  it("reads every flag; fail-on defaults to unsafe", () => {
+  it("reads local files; fail-on defaults to unsafe", () => {
     expect(parseVerifyArgs(ALL)).toEqual({
       kind: "run",
       options: {
-        report: "r.json",
-        bundle: "r.sigstore.json",
-        signer: {
-          identity:
-            "https://github.com/acme/shop/.github/workflows/rollback-gate.yml@refs/heads/main",
-          repository: "acme/shop",
-          ref: "refs/heads/main",
-        },
+        source: { kind: "files", report: "r.json", bundle: "r.sigstore.json" },
+        workflow: ".github/workflows/rollback-gate.yml",
+        signer: EXPECTED_SIGNER,
         sha: SHA,
         failOn: "unsafe",
       },
+    });
+  });
+
+  it("fetches from GitHub with --from-github, artifact name defaulting to the action's", () => {
+    expect(parseVerifyArgs(["--from-github", ...SIGNER])).toEqual({
+      kind: "run",
+      options: {
+        source: { kind: "github", artifact: "rollback-gate-report" },
+        workflow: ".github/workflows/rollback-gate.yml",
+        signer: EXPECTED_SIGNER,
+        sha: SHA,
+        failOn: "unsafe",
+      },
+    });
+    const named = parseVerifyArgs(["--from-github", "--artifact", "gate", ...SIGNER]);
+    expect(named.kind === "run" && named.options.source).toEqual({
+      kind: "github",
+      artifact: "gate",
     });
   });
 
@@ -46,7 +62,18 @@ describe("parseVerifyArgs", () => {
     expect(parseVerifyArgs(["--help"])).toEqual({ kind: "help" });
   });
 
-  it.each(["--report", "--bundle", "--repository", "--workflow", "--ref", "--sha"])(
+  it.each([
+    [[...SIGNER], /either --report and --bundle, or --from-github/],
+    [["--report", "r.json", ...SIGNER], /either --report and --bundle, or --from-github/],
+    [["--bundle", "b.json", ...SIGNER], /either --report and --bundle, or --from-github/],
+    [["--from-github", ...FILES, ...SIGNER], /either --report and --bundle, or --from-github/],
+    [["--artifact", "gate", ...ALL], /--artifact only goes with --from-github/],
+  ])("needs exactly one source: rejects %j", (argv, message) => {
+    expect(() => parseVerifyArgs(argv)).toThrow(UsageError);
+    expect(() => parseVerifyArgs(argv)).toThrow(message);
+  });
+
+  it.each(["--repository", "--workflow", "--ref", "--sha"])(
     "requires %s: no check can be left out",
     (flag) => {
       const i = ALL.indexOf(flag);
@@ -70,6 +97,7 @@ describe("parseVerifyArgs", () => {
     [["--fail-on", "never"], /--fail-on/],
     [["--certificate-identity-regexp", ".*"], /certificate-identity-regexp/],
     [["extra"], /extra/],
+    [["--artifact", ""], /--artifact/],
   ])("rejects %j", (extra, message) => {
     expect(() => parseVerifyArgs([...ALL, ...extra])).toThrow(message);
   });

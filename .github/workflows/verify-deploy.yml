@@ -1,0 +1,49 @@
+# Plays a deploy pipeline in another workflow: once Rollback Gate has run on main, verify that commit's signed report knowing only its SHA.
+# workflow_run runs with this repository's own workflow code from main, never a pull request's, and checks out no PR code.
+name: Verify before deploy
+
+on:
+  workflow_run:
+    workflows: [Rollback Gate]
+    types: [completed]
+
+permissions:
+  contents: read
+  # To find the gate run for the commit and download its artifact.
+  actions: read
+
+jobs:
+  verify:
+    name: verify (fetched by commit)
+    # Only gate runs for pushes to main: those are the only ones that sign.
+    if: github.event.workflow_run.event == 'push' && github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      # The default branch, for `uses: ./verify`; never the triggering run's code.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Only the commit is known here: the verifier finds and fetches the signed report itself.
+      - name: Verify the deploy commit
+        uses: ./verify
+        with:
+          workflow: .github/workflows/rollback-gate.yml
+          ref: refs/heads/main
+          sha: ${{ github.event.workflow_run.head_sha }}
+
+      # And a commit with no gate run must be refused, not waved through.
+      - id: no-run
+        continue-on-error: true
+        uses: ./verify
+        with:
+          workflow: .github/workflows/rollback-gate.yml
+          ref: refs/heads/main
+          sha: "0000000000000000000000000000000000000000"
+      - name: It must have been refused
+        env:
+          NO_RUN: ${{ steps.no-run.outcome }}
+        run: |
+          echo "commit with no gate run: $NO_RUN"
+          test "$NO_RUN" = failure

@@ -63,7 +63,7 @@ jobs:
         with:
           fetch-depth: 0 # tags and history: base is found from release tags
           persist-credentials: false
-      - uses: HarounMehdaoui/rigseal@v0.1.0
+      - uses: HarounMehdaoui/rigseal@v0.3.0
 ```
 
 For supply-chain safety, pin both actions to a full commit SHA instead of a tag.
@@ -111,7 +111,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: HarounMehdaoui/rigseal@v0.2.0
+      - uses: HarounMehdaoui/rigseal@v0.3.0
         with:
           sign: "true"
 ```
@@ -141,7 +141,7 @@ deploy:
     - uses: actions/download-artifact@v8
       with:
         name: rollback-gate-report
-    - uses: HarounMehdaoui/rigseal/verify@v0.2.0
+    - uses: HarounMehdaoui/rigseal/verify@v0.3.0
       with:
         report: report.json
         bundle: report.sigstore.json
@@ -151,11 +151,39 @@ deploy:
     - run: ./deploy.sh # only reached if verification passed
 ```
 
-Anywhere else, with Node 26 and cosign installed:
+In a deploy in **another workflow**, knowing only the commit, leave out `report` and `bundle`: the
+verifier finds the newest completed `push` run of the signing workflow on that ref at that commit
+and downloads its artifact itself. Whatever it downloads is untrusted until the signature checks
+pass; no run, or an expired artifact, refuses the deploy.
+
+```yaml
+permissions:
+  contents: read
+  actions: read # to find the gate run and download its artifact
+jobs:
+  deploy:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: HarounMehdaoui/rigseal/verify@v0.3.0
+        with:
+          workflow: .github/workflows/rollback-gate.yml
+          ref: refs/heads/main
+          sha: ${{ github.sha }} # the commit you are deploying
+      - run: ./deploy.sh
+```
+
+Anywhere else, with Node 26 and cosign installed (and [gh](https://cli.github.com) for
+`--from-github`):
 
 ```sh
+# with local files
 node /path/to/rigseal/dist/cli.js verify \
   --report report.json --bundle report.sigstore.json \
+  --repository OWNER/REPO --workflow .github/workflows/rollback-gate.yml --ref refs/heads/main \
+  --sha "$DEPLOY_SHA"
+
+# or fetched by commit (gh logged in, or GH_TOKEN with actions:read)
+node /path/to/rigseal/dist/cli.js verify --from-github \
   --repository OWNER/REPO --workflow .github/workflows/rollback-gate.yml --ref refs/heads/main \
   --sha "$DEPLOY_SHA"
 ```
@@ -164,7 +192,7 @@ node /path/to/rigseal/dist/cli.js verify \
 | --------- | --------------------------------------------------------------------------------------------------- |
 | `0`       | deploy allowed                                                                                      |
 | `1`       | deploy refused: bad or missing signature, wrong signer, wrong commit, blocked verdict, missing file |
-| `2`       | the tool itself failed: bad arguments, cosign not installed                                         |
+| `2`       | the tool itself failed: bad arguments, cosign or gh not installed or not logged in                  |
 
 The JSON is byte-identical for the same inputs, so the signature covers exactly what the gate
 decided. Changing any byte of the report, the verdict included, makes verification fail.
@@ -302,8 +330,7 @@ throwaway git repos with tags (`npm run test:e2e`).
 
 ## Roadmap
 
-- **Fetching the signed report by commit**, so a deploy in another workflow needs only the commit SHA,
-  and optionally an attestation on container images.
+- **An attestation on container images**, so the verdict travels with the image in its registry.
 - Later, as needed: a rollback rehearsal in a throwaway Postgres (it can only raise the verdict); a
   reviewed acknowledgement file for intended breaks; reading paths from `prisma.config.ts` without
   executing it.

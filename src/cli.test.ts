@@ -54,10 +54,12 @@ describe("cli verify subcommand", () => {
     expect(help.stdout).toMatch(/^Usage: rollback-gate verify/);
   });
 
-  it("exits 2 when a required flag is missing", async () => {
+  it("exits 2 when the report has no bundle", async () => {
     const result = await cli(["verify", "--report", "r.json"]);
     expect(result.code).toBe(2);
-    expect(result.stderr).toMatch(/^rollback-gate: --bundle is required/);
+    expect(result.stderr).toMatch(
+      /^rollback-gate: give either --report and --bundle, or --from-github/,
+    );
   });
 });
 

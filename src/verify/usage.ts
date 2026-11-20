@@ -7,9 +7,13 @@ are deploying, is about that commit, and has a verdict your policy allows. Needs
 
 Every check always runs; none can be switched off.
 
-Files (both required):
-  --report <file>         the JSON report
+The report and its bundle, from exactly one source:
+  --report <file>         the JSON report            (local files: give both)
   --bundle <file>         its cosign bundle
+  --from-github           or fetch them: the newest completed push run of --workflow on --ref at
+                          --sha in --repository, any conclusion. Needs gh, logged in or GH_TOKEN
+                          with actions:read. What is fetched is untrusted until verified.
+  --artifact <name>       the artifact name with --from-github (default: rollback-gate-report)
 
 The signer (all required, matched exactly, never as a pattern):
   --repository <o/r>      the repository whose workflow signed, e.g. acme/shop
@@ -21,5 +25,5 @@ The deploy:
   --fail-on <level>       "unsafe" (default) or "risky": the lowest verdict that refuses the deploy
   -h, --help              show this text
 
-  0  deploy allowed   1  deploy refused   2  the tool itself failed (bad arguments, cosign missing)
+  0  deploy allowed   1  deploy refused   2  the tool itself failed (bad arguments, cosign or gh failing)
 `;

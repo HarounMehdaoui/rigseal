@@ -4,11 +4,13 @@ description: Refuse a deploy unless its Rollback Gate report is signed by your w
 
 inputs:
   report:
-    description: Path of the JSON report (from the signing run's artifact).
-    required: true
+    description: Path of the JSON report. Leave report and bundle both empty to fetch them from the gate run for `sha`.
+    required: false
+    default: ""
   bundle:
-    description: Path of its cosign bundle (report.sigstore.json).
-    required: true
+    description: Path of its cosign bundle (report.sigstore.json). Give it together with report, or neither.
+    required: false
+    default: ""
   workflow:
     description: The workflow file that signed the report, e.g. .github/workflows/rollback-gate.yml.
     required: true
@@ -27,6 +29,14 @@ inputs:
     description: '"unsafe" (default) or "risky": the lowest verdict that refuses the deploy.'
     required: false
     default: unsafe
+  artifact:
+    description: When fetching, the artifact name the gate uploaded.
+    required: false
+    default: rollback-gate-report
+  github-token:
+    description: When fetching, a token that can read the signing repository's Actions runs (actions read).
+    required: false
+    default: ${{ github.token }}
 
 runs:
   using: composite
@@ -45,20 +55,27 @@ runs:
         cosign-release: v3.1.4
 
     # Inputs reach the command as environment variables, never pasted into the script text.
+    # No paths: fetch the gate run's artifact for the commit. What is fetched is untrusted until verified.
     - name: Verify the signed report
       shell: bash
       env:
         VERIFY_REPORT: ${{ inputs.report }}
         VERIFY_BUNDLE: ${{ inputs.bundle }}
+        VERIFY_ARTIFACT: ${{ inputs.artifact }}
         VERIFY_REPOSITORY: ${{ inputs.repository }}
         VERIFY_WORKFLOW: ${{ inputs.workflow }}
         VERIFY_REF: ${{ inputs.ref }}
         VERIFY_SHA: ${{ inputs.sha }}
         VERIFY_FAIL_ON: ${{ inputs.fail-on }}
+        GH_TOKEN: ${{ inputs.github-token }}
       run: |
-        node "$GITHUB_ACTION_PATH/../dist/cli.js" verify \
-          --report "$VERIFY_REPORT" \
-          --bundle "$VERIFY_BUNDLE" \
+        if [[ -z "$VERIFY_REPORT" && -z "$VERIFY_BUNDLE" ]]; then
+          source=(--from-github --artifact "$VERIFY_ARTIFACT")
+        else
+          # Exactly one of the two given: the CLI refuses it with a clear message.
+          source=(--report "$VERIFY_REPORT" --bundle "$VERIFY_BUNDLE")
+        fi
+        node "$GITHUB_ACTION_PATH/../dist/cli.js" verify "${source[@]}" \
           --repository "$VERIFY_REPOSITORY" \
           --workflow "$VERIFY_WORKFLOW" \
           --ref "$VERIFY_REF" \

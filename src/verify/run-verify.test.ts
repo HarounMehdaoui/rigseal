@@ -2,6 +2,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { type FakeGh, makeFakeGh } from "../github/fake-gh.ts";
 import { type FakeCosign, makeFakeCosign } from "../sigstore/fake-cosign.ts";
 import { runVerify } from "./run-verify.ts";
 
@@ -17,13 +18,16 @@ const SIGNER = [
 
 let dir: string;
 let cosign: FakeCosign;
+let gh: FakeGh;
 beforeEach(async () => {
   dir = await mkdtemp(join(tmpdir(), "rg-verify-"));
   cosign = await makeFakeCosign();
+  gh = await makeFakeGh();
 });
 afterEach(async () => {
   await rm(dir, { recursive: true, force: true });
   await cosign.remove();
+  await gh.remove();
 });
 
 async function files(verdict = "SAFE", sha = SHA): Promise<string[]> {
@@ -42,6 +46,7 @@ async function verify(...argv: string[]) {
   let stderr = "";
   const code = await runVerify(argv, {
     cosign: cosign.path,
+    gh: gh.path,
     stdout: (text) => {
       stdout += text;
     },
@@ -122,6 +127,7 @@ describe("runVerify", () => {
     let stderr = "";
     const code = await runVerify(argv, {
       cosign: "/nonexistent/cosign",
+      gh: gh.path,
       stdout: () => {},
       stderr: (text) => {
         stderr += text;
@@ -135,5 +141,80 @@ describe("runVerify", () => {
     const result = await verify("--help");
     expect(result.code).toBe(0);
     expect(result.stdout).toMatch(/^Usage: rollback-gate verify/);
+  });
+});
+
+describe("runVerify --from-github", () => {
+  /** gh behaviour: `run list` finds run 42 at SHA; `run download` writes the given verdict's report. */
+  async function github(
+    verdict: string,
+    run = `[{"databaseId":42,"conclusion":"success","headSha":"${SHA}"}]`,
+  ) {
+    const report = JSON.stringify({
+      schemaVersion: 1,
+      tool: { name: "rollback-gate" },
+      verdict,
+      head: { sha: SHA },
+    });
+    await gh.behave(`case "$2" in
+  list) echo '${run}' ;;
+  download) d=""; while [ $# -gt 0 ]; do [ "$1" = "--dir" ] && d="$2"; shift; done
+    echo '${report}' > "$d/report.json"; echo '{}' > "$d/report.sigstore.json" ;;
+esac`);
+  }
+
+  it("fetches the gate run's artifact for the deploy commit and verifies it", async () => {
+    await github("SAFE");
+    const result = await verify("--from-github", ...SIGNER, "--sha", SHA);
+    expect(result.code).toBe(0);
+    expect(result.stdout).toMatch(new RegExp(`OK: SAFE report for ${SHA} \\(run 42\\), signed by`));
+    const [list, download] = await gh.calls();
+    expect(list?.slice(0, 2)).toEqual(["run", "list"]);
+    expect(download?.slice(0, 7)).toEqual([
+      "run",
+      "download",
+      "42",
+      "--repo",
+      "acme/shop",
+      "--name",
+      "rollback-gate-report",
+    ]);
+  });
+
+  it("refuses an UNSAFE commit for its real reason, though its gate run failed", async () => {
+    await github("UNSAFE", `[{"databaseId":42,"conclusion":"failure","headSha":"${SHA}"}]`);
+    const result = await verify("--from-github", ...SIGNER, "--sha", SHA);
+    expect(result.code).toBe(1);
+    expect(result.stderr).toMatch(/refused: the verdict is UNSAFE/);
+  });
+
+  it("refuses when no gate run exists for the commit", async () => {
+    await gh.behave("echo '[]'");
+    const result = await verify("--from-github", ...SIGNER, "--sha", SHA);
+    expect(result.code).toBe(1);
+    expect(result.stderr).toMatch(
+      new RegExp(
+        `refused: no completed push run of .github/workflows/rollback-gate.yml on refs/heads/main at ${SHA} in acme/shop`,
+      ),
+    );
+  });
+
+  it("refuses when the run's artifact is missing or expired", async () => {
+    await gh.behave(`case "$2" in
+  list) echo '[{"databaseId":42,"conclusion":"success","headSha":"${SHA}"}]' ;;
+  download) echo 'no valid artifacts found to download' >&2; exit 1 ;;
+esac`);
+    const result = await verify("--from-github", ...SIGNER, "--sha", SHA);
+    expect(result.code).toBe(1);
+    expect(result.stderr).toMatch(
+      /refused: can't download artifact "rollback-gate-report" of run 42: no valid artifacts found/,
+    );
+  });
+
+  it("exits 2 when gh itself fails, e.g. not logged in", async () => {
+    await gh.behave("echo 'gh auth login' >&2; exit 4");
+    const result = await verify("--from-github", ...SIGNER, "--sha", SHA);
+    expect(result.code).toBe(2);
+    expect(result.stderr).toMatch(/^rollback-gate: gh run list failed: gh auth login/);
   });
 });

@@ -11,7 +11,7 @@ const stderr = (text: string) => process.stderr.write(text);
 // exitCode, not process.exit(): stdout is flushed before Node exits, even when piped.
 process.exitCode =
   argv[0] === "verify"
-    ? await runVerify(argv.slice(1), { cosign: "cosign", stdout, stderr })
+    ? await runVerify(argv.slice(1), { cosign: "cosign", gh: "gh", stdout, stderr })
     : await run(argv, {
         repo: process.cwd(),
         stdout,
