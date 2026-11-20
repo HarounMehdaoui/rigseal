@@ -10,3 +10,6 @@ CLAUDE.local.md
 node_modules/
 dist/
 coverage/
+
+# The one Markdown file that is committed (D56)
+!/README.md
