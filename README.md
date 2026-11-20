@@ -72,17 +72,64 @@ The action builds the tool at the tag you use, runs it, writes the report to the
 **one** comment on the pull request (edited on every push), and sets the check from the verdict.
 Pull requests from forks get the job summary only, because their token is read-only.
 
-| Input          | Default                | Meaning                                             |
-| -------------- | ---------------------- | --------------------------------------------------- |
-| `target`       | the PR's base branch   | branch whose newest release tag is base             |
-| `tag-pattern`  | `v*`                   | which tags are releases                             |
-| `schema`       | `prisma/schema.prisma` | the schema file, repo-relative                      |
-| `migrations`   | `prisma/migrations`    | the migrations folder, repo-relative                |
-| `fail-on`      | `unsafe`               | `risky` also fails the check on RISKY               |
-| `comment`      | `true`                 | keep the sticky PR comment                          |
-| `github-token` | `github.token`         | token for the comment; needs `pull-requests: write` |
+| Input           | Default                | Meaning                                                     |
+| --------------- | ---------------------- | ----------------------------------------------------------- |
+| `target`        | the PR's base branch   | branch whose newest release tag is base                     |
+| `tag-pattern`   | `v*`                   | which tags are releases                                     |
+| `schema`        | `prisma/schema.prisma` | the schema file, repo-relative                              |
+| `migrations`    | `prisma/migrations`    | the migrations folder, repo-relative                        |
+| `fail-on`       | `unsafe`               | `risky` also fails the check on RISKY                       |
+| `comment`       | `true`                 | keep the sticky PR comment                                  |
+| `github-token`  | `github.token`         | token for the comment; needs `pull-requests: write`         |
+| `sign`          | `false`                | sign the JSON report with cosign on push events (see below) |
+| `artifact-name` | `rollback-gate-report` | name of the uploaded artifact with the signed report        |
 
-Outputs: `verdict` (`SAFE`/`RISKY`/`UNSAFE`, empty if the tool failed) and `exit-code`.
+Outputs: `verdict` (`SAFE`/`RISKY`/`UNSAFE`, empty if the tool failed), `exit-code`, `report` (path
+of the JSON report) and `bundle` (path of its cosign bundle, when signed).
+
+### Signed reports
+
+With `sign: "true"`, the action signs the JSON report with [cosign](https://github.com/sigstore/cosign)
+on **push** events, keyless: the workflow's OIDC token gets a short-lived certificate naming the
+repository, the workflow and the commit, and the signature is recorded in Sigstore's public
+transparency log. No key to store or rotate. The report and its bundle (`report.sigstore.json`) are
+uploaded as the `rollback-gate-report` artifact. On pull requests nothing is signed: their code is
+untrusted and may never merge.
+
+```yaml
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+  id-token: write # for keyless signing
+jobs:
+  gate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: HarounMehdaoui/rigseal@v0.2.0
+        with:
+          sign: "true"
+```
+
+Before a deploy, check that the report was signed by your workflow, is about the commit you are
+deploying, and isn't UNSAFE:
+
+```sh
+cosign verify-blob report.json --bundle report.sigstore.json \
+  --certificate-identity "https://github.com/OWNER/REPO/.github/workflows/rollback-gate.yml@refs/heads/main" \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+  --certificate-github-workflow-sha "$DEPLOY_SHA"
+test "$(jq -r .head.sha report.json)" = "$DEPLOY_SHA"
+test "$(jq -r .verdict report.json)" != "UNSAFE"
+```
+
+The JSON is byte-identical for the same inputs, so the signature covers exactly what the gate
+decided. Changing any byte of the report, the verdict included, makes verification fail.
 
 ## Use it from the command line
 
@@ -217,8 +264,8 @@ throwaway git repos with tags (`npm run test:e2e`).
 
 ## Roadmap
 
-- **v0.2: signing and deploy blocking.** Sign the JSON report as an attestation on the exact artifact
-  that ships, and block deploys whose attestation is missing or `UNSAFE`.
+- **Deploy blocking.** Reports are signed since v0.2.0; next is a ready-made deploy check that refuses a
+  release whose signed report is missing or `UNSAFE`, and optionally an attestation on container images.
 - Later, as needed: a rollback rehearsal in a throwaway Postgres (it can only raise the verdict); a
   reviewed acknowledgement file for intended breaks; reading paths from `prisma.config.ts` without
   executing it.

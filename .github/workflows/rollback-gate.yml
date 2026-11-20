@@ -1,13 +1,17 @@
-# Runs this repo's own action (`uses: ./`) on every pull request, on the lab's Prisma folder: proves the action end to end.
+# Runs this repo's own action (`uses: ./`) on the lab's Prisma folder: on pull requests it comments; on main it signs, then verifies the signature.
 # Trigger is `pull_request`: PR code runs with a read-only token on forks and no secrets.
 name: Rollback Gate
 
 on:
   pull_request:
+  push:
+    branches: [main]
 
 permissions:
   contents: read
   pull-requests: write
+  # Keyless signing: the workflow's OIDC token gets a short-lived signing certificate.
+  id-token: write
 
 concurrency:
   group: rollback-gate-${{ github.ref }}
@@ -24,7 +28,35 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: ./
+      - id: gate
+        uses: ./
         with:
           schema: lab/prisma/schema.prisma
           migrations: lab/prisma/migrations
+          # Signs on push only; on pull requests the action skips it with a notice.
+          sign: "true"
+
+      # What a deploy would check: the signature comes from this repo's workflow at this commit,
+      # the signed report is about this commit, and a tampered report is rejected.
+      - name: Verify the signed report
+        if: github.event_name == 'push'
+        env:
+          REPORT: ${{ steps.gate.outputs.report }}
+          BUNDLE: ${{ steps.gate.outputs.bundle }}
+        run: |
+          verify() {
+            cosign verify-blob "$1" --bundle "$BUNDLE" \
+              --certificate-identity "https://github.com/$GITHUB_REPOSITORY/.github/workflows/rollback-gate.yml@$GITHUB_REF" \
+              --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+              --certificate-github-workflow-sha "$GITHUB_SHA"
+          }
+          verify "$REPORT"
+          test "$(jq -r .head.sha "$REPORT")" = "$GITHUB_SHA"
+          echo "verdict: $(jq -r .verdict "$REPORT")"
+
+          jq '.verdict = "SAFE" | .entries = []' "$REPORT" > "$RUNNER_TEMP/tampered.json"
+          if verify "$RUNNER_TEMP/tampered.json"; then
+            echo "::error::a tampered report passed verification"
+            exit 1
+          fi
+          echo "tampered report rejected, as it should be"

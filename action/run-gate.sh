@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The action's gate step: refuses a shallow clone, runs the CLI, and records exit code, verdict and Markdown report as step outputs.
+# The action's gate step: refuses a shallow clone, runs the CLI, and records exit code, verdict and report paths as step outputs.
 set -euo pipefail
 
 out="$RUNNER_TEMP/rollback-gate"
@@ -18,7 +18,7 @@ if [[ "$(git rev-parse --is-shallow-repository)" == "true" ]]; then
   message="This is a shallow clone, so release tags and history are missing. Set fetch-depth: 0 on actions/checkout."
   echo "::error title=Rollback Gate::$message"
   failure_report "$message"
-  { echo "exit-code=2"; echo "verdict="; echo "markdown=$report_md"; } >> "$GITHUB_OUTPUT"
+  { echo "exit-code=2"; echo "verdict="; echo "markdown=$report_md"; echo "json="; } >> "$GITHUB_OUTPUT"
   exit 0
 fi
 
@@ -42,10 +42,12 @@ code=$?
 set -e
 
 verdict=""
+json=""
 if [[ -f "$report_json" ]]; then
   verdict="$(jq -r .verdict "$report_json")"
+  json="$report_json"
 else
   failure_report "The tool could not run (exit $code). The job log says why."
 fi
 
-{ echo "exit-code=$code"; echo "verdict=$verdict"; echo "markdown=$report_md"; } >> "$GITHUB_OUTPUT"
+{ echo "exit-code=$code"; echo "verdict=$verdict"; echo "markdown=$report_md"; echo "json=$json"; } >> "$GITHUB_OUTPUT"
