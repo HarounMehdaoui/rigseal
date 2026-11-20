@@ -1,5 +1,5 @@
 # Lint and test (unit, scenario and end to end) every pull request and every push to main.
-# Trigger is `pull_request`, never `pull_request_target`: PR code runs with a read-only token and no secrets.
+# Trigger is `pull_request` only (never the _target variant): PR code runs with a read-only token and no secrets.
 name: CI
 
 on:
@@ -33,3 +33,22 @@ jobs:
       - run: npm test
       # Builds dist/ and runs the CLI on throwaway git repos (D54, D55).
       - run: npm run test:e2e
+
+  actionlint:
+    name: actionlint + shellcheck
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Pinned release binary, checked against the SHA-256 from its release (D59).
+      - name: Install actionlint 1.7.12
+        run: |
+          curl -fsSLo "$RUNNER_TEMP/actionlint.tar.gz" \
+            https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  $RUNNER_TEMP/actionlint.tar.gz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/actionlint.tar.gz" -C "$RUNNER_TEMP" actionlint
+      # actionlint also runs shellcheck on every workflow `run:` block (shellcheck ships on the runner).
+      - run: '"$RUNNER_TEMP/actionlint" -color'
+      - run: shellcheck action/*.sh

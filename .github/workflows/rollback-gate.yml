@@ -1,0 +1,30 @@
+# Runs this repo's own action (`uses: ./`) on every pull request, on the lab's Prisma folder: proves the action end to end.
+# Trigger is `pull_request`: PR code runs with a read-only token on forks and no secrets (D17).
+name: Rollback Gate
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: rollback-gate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gate:
+    name: rollback gate (lab)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      # Full history and tags: base is the newest release tag reachable from the target (D5, D60).
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ./
+        with:
+          schema: lab/prisma/schema.prisma
+          migrations: lab/prisma/migrations

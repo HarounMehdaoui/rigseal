@@ -1,0 +1,94 @@
+# Rollback Gate as a composite GitHub Action (D17): runs the gate on a PR, writes the job summary, keeps one sticky comment, sets the check from the exit code.
+name: Rollback Gate
+description: Can the last release's code still run on the database this pull request's Prisma migrations leave?
+
+inputs:
+  target:
+    description: Branch whose newest release tag is base. Defaults to the pull request's base branch.
+    required: false
+    default: ""
+  tag-pattern:
+    description: Release tags to look for.
+    required: false
+    default: "v*"
+  schema:
+    description: The Prisma schema file, repo-relative.
+    required: false
+    default: prisma/schema.prisma
+  migrations:
+    description: The Prisma migrations folder, repo-relative.
+    required: false
+    default: prisma/migrations
+  fail-on:
+    description: '"unsafe" (default) or "risky": the lowest verdict that fails the check.'
+    required: false
+    default: unsafe
+  comment:
+    description: '"true" to keep one sticky comment on the pull request (never on forks, whose token is read-only).'
+    required: false
+    default: "true"
+  github-token:
+    description: Token for the PR comment; needs pull-requests write.
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  verdict:
+    description: SAFE, RISKY or UNSAFE; empty if the gate itself failed.
+    value: ${{ steps.gate.outputs.verdict }}
+  exit-code:
+    description: 0 SAFE/RISKY, 1 UNSAFE (or RISKY with fail-on risky), 2 the tool failed.
+    value: ${{ steps.gate.outputs.exit-code }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: ${{ github.action_path }}/.nvmrc
+
+    # The action's own copy has source, not dist/: build it at the exact tag being used (D57).
+    - name: Build Rollback Gate
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: npm ci --no-audit --no-fund && npm run build
+
+    # Inputs reach the script as environment variables, never pasted into the script text,
+    # so a branch name can't inject shell commands.
+    - name: Run Rollback Gate
+      id: gate
+      shell: bash
+      env:
+        GATE_TARGET: ${{ inputs.target || github.base_ref }}
+        GATE_TAG_PATTERN: ${{ inputs.tag-pattern }}
+        GATE_SCHEMA: ${{ inputs.schema }}
+        GATE_MIGRATIONS: ${{ inputs.migrations }}
+        GATE_FAIL_ON: ${{ inputs.fail-on }}
+      run: '"$GITHUB_ACTION_PATH/action/run-gate.sh"'
+
+    - name: Job summary
+      shell: bash
+      env:
+        REPORT: ${{ steps.gate.outputs.markdown }}
+      run: cat "$REPORT" >> "$GITHUB_STEP_SUMMARY"
+
+    # Forks get a read-only token, so they get the job summary only (D17).
+    - name: Sticky PR comment
+      if: >-
+        inputs.comment == 'true' && github.event_name == 'pull_request' &&
+        github.event.pull_request.head.repo.full_name == github.repository
+      # A comment that can't be posted must not hide or change the verdict.
+      continue-on-error: true
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        REPO: ${{ github.repository }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        REPORT: ${{ steps.gate.outputs.markdown }}
+      run: '"$GITHUB_ACTION_PATH/action/sticky-comment.sh"'
+
+    - name: Set the check from the exit code
+      shell: bash
+      env:
+        CODE: ${{ steps.gate.outputs.exit-code }}
+      run: exit "$CODE"
