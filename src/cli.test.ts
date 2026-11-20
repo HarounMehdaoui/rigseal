@@ -1,11 +1,11 @@
 import { execFile } from "node:child_process";
-import { readdirSync, readFileSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { makeRepo, type TestRepo } from "./git/test-repo.ts";
+import { treeFiles } from "./tree-files.ts";
 
 const execFileAsync = promisify(execFile);
 const CLI = fileURLToPath(new URL("cli.ts", import.meta.url));
@@ -47,24 +47,18 @@ describe("cli entry point", () => {
   });
 });
 
-/** Every file under a scenario side (`scenarios/<name>/base` or `head`), keyed by its path inside it. */
-function scenarioFiles(name: string, side: "base" | "head"): Record<string, string> {
-  const dir = fileURLToPath(new URL(`../scenarios/${name}/${side}/`, import.meta.url));
-  const files: Record<string, string> = {};
-  for (const path of readdirSync(dir, { recursive: true, encoding: "utf8" })) {
-    if (path.endsWith(".sql") || path.endsWith(".prisma")) {
-      files[path] = readFileSync(join(dir, path), "utf8");
-    }
-  }
-  return files;
-}
-
 describe("cli determinism (D24)", () => {
   it("writes byte-identical JSON and Markdown when run twice on the same inputs", async () => {
-    await repo.commit("release", scenarioFiles("lab-backfill-hand-edit", "base"));
+    await repo.commit(
+      "release",
+      treeFiles(new URL("../scenarios/lab-backfill-hand-edit/base/", import.meta.url)),
+    );
     await repo.git("tag", "v1");
     await repo.git("rm", "-r", "--quiet", "prisma");
-    await repo.commit("head", scenarioFiles("lab-backfill-hand-edit", "head"));
+    await repo.commit(
+      "head",
+      treeFiles(new URL("../scenarios/lab-backfill-hand-edit/head/", import.meta.url)),
+    );
 
     // Two separate processes: no module state, cache or clock is shared between the runs.
     const first = await cli(["--json", "a.json", "--markdown", "a.md"]);

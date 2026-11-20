@@ -1,4 +1,4 @@
-# Lint and test every pull request and every push to main.
+# Lint and test (unit, scenario and end to end) every pull request and every push to main.
 # Trigger is `pull_request`, never `pull_request_target`: PR code runs with a read-only token and no secrets.
 name: CI
 
@@ -31,3 +31,5 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      # Builds dist/ and runs the CLI on throwaway git repos (D54, D55).
+      - run: npm run test:e2e

@@ -9,7 +9,8 @@ import { promisify } from "node:util";
 
 const execFileAsync = promisify(execFile);
 
-const isolatedEnv = {
+/** git's environment with global and system config off and a fixed author; also for spawned CLIs. */
+export const isolatedEnv = {
   ...process.env,
   GIT_CONFIG_GLOBAL: "/dev/null",
   GIT_CONFIG_NOSYSTEM: "1",

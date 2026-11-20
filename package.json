@@ -13,7 +13,8 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "lint": "biome check . && tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run --dir src",
+    "test:e2e": "npm run build && vitest run --dir e2e"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.8",
