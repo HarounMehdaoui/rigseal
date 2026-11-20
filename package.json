@@ -4,10 +4,14 @@
   "private": true,
   "description": "CI gate: can the last release's code still run on the database head's Prisma migrations leave?",
   "type": "module",
+  "bin": {
+    "rollback-gate": "dist/cli.js"
+  },
   "engines": {
     "node": ">=26"
   },
   "scripts": {
+    "build": "tsc --project tsconfig.build.json",
     "lint": "biome check . && tsc --noEmit",
     "test": "vitest run"
   },
