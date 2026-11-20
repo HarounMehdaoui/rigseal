@@ -1,12 +1,20 @@
 #!/usr/bin/env node
-// The `rollback-gate` executable: runs the gate on the current directory's repository and sets the exit code.
+// The `rollback-gate` executable: runs the gate (or `verify` before a deploy) in the current directory and sets the exit code.
 import { writeFile } from "node:fs/promises";
 import { run } from "./cli/run.ts";
+import { runVerify } from "./verify/run-verify.ts";
+
+const argv = process.argv.slice(2);
+const stdout = (text: string) => process.stdout.write(text);
+const stderr = (text: string) => process.stderr.write(text);
 
 // exitCode, not process.exit(): stdout is flushed before Node exits, even when piped.
-process.exitCode = await run(process.argv.slice(2), {
-  repo: process.cwd(),
-  stdout: (text) => process.stdout.write(text),
-  stderr: (text) => process.stderr.write(text),
-  writeFile: (path, text) => writeFile(path, text, "utf8"),
-});
+process.exitCode =
+  argv[0] === "verify"
+    ? await runVerify(argv.slice(1), { cosign: "cosign", stdout, stderr })
+    : await run(argv, {
+        repo: process.cwd(),
+        stdout,
+        stderr,
+        writeFile: (path, text) => writeFile(path, text, "utf8"),
+      });

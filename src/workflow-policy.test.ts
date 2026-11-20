@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 const ROOT = fileURLToPath(new URL("../", import.meta.url));
 // Built from two parts so this file never contains the word it looks for.
 const FORBIDDEN = ["pull_request", "_target"].join("");
-const SCANNED = [".github", "action.yml", "action"];
+const SCANNED = [".github", "action.yml", "action", "verify"];
 
 function filesUnder(path: string): string[] {
   const full = join(ROOT, path);

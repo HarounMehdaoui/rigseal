@@ -47,6 +47,20 @@ describe("cli entry point", () => {
   });
 });
 
+describe("cli verify subcommand", () => {
+  it("routes `verify` to the verifier", async () => {
+    const help = await cli(["verify", "--help"]);
+    expect(help.code).toBe(0);
+    expect(help.stdout).toMatch(/^Usage: rollback-gate verify/);
+  });
+
+  it("exits 2 when a required flag is missing", async () => {
+    const result = await cli(["verify", "--report", "r.json"]);
+    expect(result.code).toBe(2);
+    expect(result.stderr).toMatch(/^rollback-gate: --bundle is required/);
+  });
+});
+
 describe("cli determinism", () => {
   it("writes byte-identical JSON and Markdown when run twice on the same inputs", async () => {
     await repo.commit(

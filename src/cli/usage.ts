@@ -24,4 +24,6 @@ Exit code:
   -h, --help              show this text
 
   0  SAFE or RISKY   1  UNSAFE (or RISKY with --fail-on risky)   2  the tool itself failed
+
+Before a deploy, check a signed report: rollback-gate verify --help
 `;

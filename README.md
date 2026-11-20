@@ -116,17 +116,55 @@ jobs:
           sign: "true"
 ```
 
-Before a deploy, check that the report was signed by your workflow, is about the commit you are
-deploying, and isn't UNSAFE:
+### Verify before you deploy
+
+A signature only helps if the check is strict, and hand-written checks are where it usually goes
+wrong: a regexp identity that matches more than it should, a missing commit pin, a forgotten verdict
+check. So the check ships with the tool, and **every part of it always runs**:
+
+- the report was signed by **exactly** your repository's workflow file on **exactly** your ref
+  (built from strictly validated parts, never a pattern), by GitHub Actions' OIDC issuer, on a
+  `push` event;
+- the signing workflow ran **at the commit you are deploying**, and the signed report is **about**
+  that commit (`head.sha`);
+- the verdict is allowed: UNSAFE is refused, and RISKY too with `fail-on: risky`;
+- a missing report or bundle refuses the deploy, and the report is read once, so it can't be swapped
+  between the signature check and the content check.
+
+In a deploy job that runs after the gate in the same workflow:
+
+```yaml
+deploy:
+  needs: gate
+  runs-on: ubuntu-24.04
+  steps:
+    - uses: actions/download-artifact@v8
+      with:
+        name: rollback-gate-report
+    - uses: HarounMehdaoui/rigseal/verify@v0.2.0
+      with:
+        report: report.json
+        bundle: report.sigstore.json
+        workflow: .github/workflows/rollback-gate.yml # the file that signed it
+        ref: refs/heads/main
+        # repository and sha default to this run's repository and commit
+    - run: ./deploy.sh # only reached if verification passed
+```
+
+Anywhere else, with Node 26 and cosign installed:
 
 ```sh
-cosign verify-blob report.json --bundle report.sigstore.json \
-  --certificate-identity "https://github.com/OWNER/REPO/.github/workflows/rollback-gate.yml@refs/heads/main" \
-  --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-  --certificate-github-workflow-sha "$DEPLOY_SHA"
-test "$(jq -r .head.sha report.json)" = "$DEPLOY_SHA"
-test "$(jq -r .verdict report.json)" != "UNSAFE"
+node /path/to/rigseal/dist/cli.js verify \
+  --report report.json --bundle report.sigstore.json \
+  --repository OWNER/REPO --workflow .github/workflows/rollback-gate.yml --ref refs/heads/main \
+  --sha "$DEPLOY_SHA"
 ```
+
+| Exit code | Meaning                                                                                             |
+| --------- | --------------------------------------------------------------------------------------------------- |
+| `0`       | deploy allowed                                                                                      |
+| `1`       | deploy refused: bad or missing signature, wrong signer, wrong commit, blocked verdict, missing file |
+| `2`       | the tool itself failed: bad arguments, cosign not installed                                         |
 
 The JSON is byte-identical for the same inputs, so the signature covers exactly what the gate
 decided. Changing any byte of the report, the verdict included, makes verification fail.
@@ -264,8 +302,8 @@ throwaway git repos with tags (`npm run test:e2e`).
 
 ## Roadmap
 
-- **Deploy blocking.** Reports are signed since v0.2.0; next is a ready-made deploy check that refuses a
-  release whose signed report is missing or `UNSAFE`, and optionally an attestation on container images.
+- **Fetching the signed report by commit**, so a deploy in another workflow needs only the commit SHA,
+  and optionally an attestation on container images.
 - Later, as needed: a rollback rehearsal in a throwaway Postgres (it can only raise the verdict); a
   reviewed acknowledgement file for intended breaks; reading paths from `prisma.config.ts` without
   executing it.

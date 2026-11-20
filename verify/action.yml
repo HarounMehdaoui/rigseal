@@ -1,0 +1,66 @@
+# Checks a signed Rollback Gate report before a deploy: installs pinned cosign, builds the tool at this tag, runs `rollback-gate verify` with every check on.
+name: Rollback Gate verify
+description: Refuse a deploy unless its Rollback Gate report is signed by your workflow, at this commit, about this commit, and not UNSAFE.
+
+inputs:
+  report:
+    description: Path of the JSON report (from the signing run's artifact).
+    required: true
+  bundle:
+    description: Path of its cosign bundle (report.sigstore.json).
+    required: true
+  workflow:
+    description: The workflow file that signed the report, e.g. .github/workflows/rollback-gate.yml.
+    required: true
+  ref:
+    description: The ref the signing workflow ran on, e.g. refs/heads/main.
+    required: true
+  repository:
+    description: The repository whose workflow signed the report.
+    required: false
+    default: ${{ github.repository }}
+  sha:
+    description: The full commit SHA being deployed.
+    required: false
+    default: ${{ github.sha }}
+  fail-on:
+    description: '"unsafe" (default) or "risky": the lowest verdict that refuses the deploy.'
+    required: false
+    default: unsafe
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version-file: ${{ github.action_path }}/../.nvmrc
+
+    - name: Build Rollback Gate
+      shell: bash
+      working-directory: ${{ github.action_path }}/..
+      run: npm ci --no-audit --no-fund && npm run build
+
+    - uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
+      with:
+        cosign-release: v3.1.4
+
+    # Inputs reach the command as environment variables, never pasted into the script text.
+    - name: Verify the signed report
+      shell: bash
+      env:
+        VERIFY_REPORT: ${{ inputs.report }}
+        VERIFY_BUNDLE: ${{ inputs.bundle }}
+        VERIFY_REPOSITORY: ${{ inputs.repository }}
+        VERIFY_WORKFLOW: ${{ inputs.workflow }}
+        VERIFY_REF: ${{ inputs.ref }}
+        VERIFY_SHA: ${{ inputs.sha }}
+        VERIFY_FAIL_ON: ${{ inputs.fail-on }}
+      run: |
+        node "$GITHUB_ACTION_PATH/../dist/cli.js" verify \
+          --report "$VERIFY_REPORT" \
+          --bundle "$VERIFY_BUNDLE" \
+          --repository "$VERIFY_REPOSITORY" \
+          --workflow "$VERIFY_WORKFLOW" \
+          --ref "$VERIFY_REF" \
+          --sha "$VERIFY_SHA" \
+          --fail-on "$VERIFY_FAIL_ON"
