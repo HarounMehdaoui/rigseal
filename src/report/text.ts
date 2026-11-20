@@ -1,32 +1,45 @@
-// Renders a run's result as plain text for the terminal: verdict, base, head, one line per entry (D45).
-import type { BaseChoice } from "../cli/choose-base.ts";
-import type { Entry, Severity, Source } from "../types.ts";
+// Renders the Report as terminal text: verdict, warnings, base → head, findings worst first, then SAFE notes one line each (D29, D51).
+import { terminalText as t } from "./terminal-text.ts";
+import type { Report, ReportEntry } from "./types.ts";
+import { worstFirst } from "./worst-first.ts";
 
-export interface TextInput {
-  readonly verdict: Severity;
-  readonly base: BaseChoice;
-  readonly head: { readonly ref: string; readonly sha: string };
-  readonly entries: readonly Entry[];
-}
+export function renderText(report: Report): string {
+  const { findings, notes } = worstFirst(report.entries);
+  const lines = [`Rollback Gate: ${report.verdict}`];
+  for (const warning of report.warnings) lines.push(`warning: ${t(warning)}`);
+  lines.push(
+    `base: ${t(report.base.ref)} (${short(report.base.sha)}, ${report.base.method})`,
+    `head: ${t(report.head.ref)} (${short(report.head.sha)})`,
+    counts(report.entries),
+  );
 
-/** Minimal on purpose: T6.2 replaces it with the full text report (D45). */
-export function renderText({ verdict, base, head, entries }: TextInput): string {
-  const lines = [`Rollback Gate: ${verdict}`];
-  if (base.method === "fallback") lines.push(`warning: ${base.warning}`);
-  lines.push(`base: ${base.ref} (${short(base.sha)}, ${base.method})`);
-  lines.push(`head: ${head.ref} (${short(head.sha)})`, "");
+  for (const e of findings) {
+    lines.push("", `${e.severity}  ${e.ruleId}  ${t(e.target)}`);
+    lines.push(`  at ${t(where(e))}`, `  ${t(e.reason)}`);
+    if (e.fix !== undefined) lines.push(`  fix: ${t(e.fix)}`);
+  }
 
-  if (entries.length === 0) lines.push("No new migrations.");
-  for (const e of entries) {
-    lines.push(`${e.severity}  ${e.ruleId}  ${e.target}  ${where(e.source)}  ${e.reason}`);
+  if (notes.length > 0) {
+    lines.push("", "SAFE notes:");
+    for (const e of notes) {
+      lines.push(`  ${e.ruleId}  ${t(e.target)}  ${t(where(e))}  ${t(e.reason)}`);
+    }
   }
   return `${lines.join("\n")}\n`;
 }
 
-function short(sha: string): string {
-  return sha.slice(0, 7);
+function counts(entries: readonly ReportEntry[]): string {
+  if (entries.length === 0) return "No changes to judge.";
+  const n = (severity: string) => entries.filter((e) => e.severity === severity).length;
+  const safe = n("SAFE");
+  return `${n("UNSAFE")} UNSAFE, ${n("RISKY")} RISKY, ${safe} SAFE ${safe === 1 ? "note" : "notes"}`;
 }
 
-function where(source: Source): string {
-  return source.kind === "statement" ? `${source.migration}:${source.line}` : source.migration;
+/** `file:line`; a whole-migration entry (line 0) is just the file. */
+function where(e: ReportEntry): string {
+  return e.line === 0 ? e.file : `${e.file}:${e.line}`;
+}
+
+function short(sha: string): string {
+  return sha.slice(0, 7);
 }

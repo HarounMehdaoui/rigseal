@@ -44,6 +44,7 @@ async function head(name: string, sql: string): Promise<void> {
 async function gate(...argv: string[]) {
   let stdout = "";
   let stderr = "";
+  const files = new Map<string, string>();
   const code = await run(argv, {
     repo: repo.dir,
     stdout: (text) => {
@@ -52,8 +53,13 @@ async function gate(...argv: string[]) {
     stderr: (text) => {
       stderr += text;
     },
+    writeFile: async (path, text) => {
+      if (path.startsWith("forbidden/"))
+        throw new Error(`EACCES: permission denied, open '${path}'`);
+      files.set(path, text);
+    },
   });
-  return { code, stdout, stderr };
+  return { code, stdout, stderr, files };
 }
 
 /** A tool failure: exit 2, nothing on stdout, exactly one line on stderr. */
@@ -125,6 +131,49 @@ describe("run: verdicts and exit codes (D14)", () => {
     const result = await gate("--help");
     expect(result.code).toBe(0);
     expect(result.stdout).toMatch(/^Usage: rollback-gate/);
+  });
+});
+
+describe("run: report files (D16, D49, D50)", () => {
+  it("writes the JSON and Markdown reports where asked, and still prints the text", async () => {
+    await release();
+    await head("drop", 'ALTER TABLE "User" DROP COLUMN "name";\n');
+
+    const result = await gate("--json", "out/r.json", "--markdown", "out/r.md");
+    expect(result.code).toBe(1);
+    expect([...result.files.keys()]).toEqual(["out/r.json", "out/r.md"]);
+    const json = JSON.parse(result.files.get("out/r.json") ?? "");
+    expect(json).toMatchObject({
+      schemaVersion: 1,
+      verdict: "UNSAFE",
+      base: { ref: "v1", method: "tag" },
+      entries: [
+        {
+          ruleId: "RG-DB-002",
+          file: "prisma/migrations/20261110000000_drop/migration.sql",
+          line: 1,
+        },
+      ],
+    });
+    expect(result.files.get("out/r.md")).toMatch(
+      /^<!-- rollback-gate -->\n## Rollback Gate: 🔴 UNSAFE/,
+    );
+    expect(result.stdout).toMatch(/^Rollback Gate: UNSAFE$/m);
+  });
+
+  it("writes nothing when the tool fails", async () => {
+    await release();
+    const result = await gate("--base", "nope", "--json", "out/r.json");
+    expect(result.code).toBe(2);
+    expect(result.files.size).toBe(0);
+  });
+
+  it("exits 2 with one line, and prints no verdict, when a report can't be written", async () => {
+    await release();
+    expectToolFailure(
+      await gate("--json", "forbidden/r.json"),
+      /can't write the JSON report to forbidden\/r\.json: EACCES/,
+    );
   });
 });
 

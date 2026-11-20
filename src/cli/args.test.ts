@@ -28,6 +28,10 @@ describe("parseCliArgs", () => {
       "db/migrations",
       "--fail-on",
       "risky",
+      "--json",
+      "out/report.json",
+      "--markdown",
+      "out/report.md",
     ]);
     expect(parsed).toEqual({
       kind: "run",
@@ -37,6 +41,8 @@ describe("parseCliArgs", () => {
         schema: "db/schema.prisma",
         migrations: "db/migrations",
         failOn: "risky",
+        json: "out/report.json",
+        markdown: "out/report.md",
       },
     });
   });
@@ -58,6 +64,7 @@ describe("parseCliArgs", () => {
     [["--base", "v1", "--tag-pattern", "v*"], /--base.*--tag-pattern/],
     [["--fail-on", "safe"], /--fail-on.*"risky" or "unsafe"/],
     [["--base", ""], /--base.*empty/],
+    [["--json", ""], /--json.*empty/],
     [["--nope"], /--nope/],
     [["main"], /main/],
     [["--base"], /--base/],

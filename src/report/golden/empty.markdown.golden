@@ -1,0 +1,11 @@
+<!-- rollback-gate -->
+## Rollback Gate: 🟢 SAFE
+
+> [!WARNING]
+> No tag matching "v\*" is reachable from "main", so base is "main" itself.
+>
+> Base's schema maps no tables, so nothing in head can break it. Check that base is the right release.
+
+Base `main` (`3333333`, fallback) → head `HEAD` (`4444444`)
+
+No changes to judge.

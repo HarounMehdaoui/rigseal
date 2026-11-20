@@ -33,7 +33,7 @@ describe("scenario inputs are sound", () => {
 
 async function run(name: string) {
   const { base, head, expected } = loadScenario(name);
-  const entries = await analyze(base, head);
+  const { entries } = await analyze(base, head);
   const actual = {
     verdict: verdictOf(entries),
     entries: entries.map(({ ruleId, severity, target, source }) => ({

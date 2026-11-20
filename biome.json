@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!lab"]
+    "includes": ["**", "!lab", "!src/report/golden"]
   },
   "formatter": {
     "indentStyle": "space",

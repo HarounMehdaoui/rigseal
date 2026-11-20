@@ -14,6 +14,10 @@ export interface CliOptions {
   readonly schema: string;
   readonly migrations: string;
   readonly failOn: FailOn;
+  /** Where to write the JSON report (D49), if anywhere. */
+  readonly json?: string;
+  /** Where to write the Markdown report (D50), if anywhere. */
+  readonly markdown?: string;
 }
 
 export type ParsedArgs = { readonly kind: "help" } | { readonly kind: "run"; options: CliOptions };
@@ -26,6 +30,8 @@ const VALUE_FLAGS = [
   "schema",
   "migrations",
   "fail-on",
+  "json",
+  "markdown",
 ] as const;
 
 export function parseCliArgs(argv: readonly string[]): ParsedArgs {
@@ -49,6 +55,8 @@ export function parseCliArgs(argv: readonly string[]): ParsedArgs {
       schema: values.schema ?? "prisma/schema.prisma",
       migrations: values.migrations ?? "prisma/migrations",
       failOn,
+      ...(values.json === undefined ? {} : { json: values.json }),
+      ...(values.markdown === undefined ? {} : { markdown: values.markdown }),
     },
   };
 }
@@ -82,6 +90,8 @@ function parse(argv: readonly string[]) {
         schema: { type: "string" },
         migrations: { type: "string" },
         "fail-on": { type: "string" },
+        json: { type: "string" },
+        markdown: { type: "string" },
         help: { type: "boolean", short: "h" },
       },
     }).values;

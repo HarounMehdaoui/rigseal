@@ -11,18 +11,18 @@ function snapshot(...migrations: { name: string; sql: string }[]): Snapshot {
 
 describe("analyze", () => {
   it("gives no entries when head adds no migration and edits none", async () => {
-    expect(await analyze(snapshot(INIT), snapshot(INIT))).toEqual([]);
+    expect((await analyze(snapshot(INIT), snapshot(INIT))).entries).toEqual([]);
   });
 
   it("judges an edited released migration, and never re-parses released ones", async () => {
     const edited = { name: "1_init", sql: "this is not SQL" };
-    expect(await analyze(snapshot(INIT), snapshot(edited))).toMatchObject([
+    expect((await analyze(snapshot(INIT), snapshot(edited))).entries).toMatchObject([
       { ruleId: "RG-DB-020", severity: "RISKY", target: "1_init" },
     ]);
   });
 
   it("parses only head's new migrations, in name order", async () => {
-    const entries = await analyze(
+    const { entries } = await analyze(
       snapshot(INIT),
       snapshot(INIT, { name: "3_bad", sql: "DROP;" }, { name: "2_bad", sql: "ALTER;" }),
     );
@@ -33,11 +33,23 @@ describe("analyze", () => {
   });
 
   it("puts history entries before the new migrations' entries", async () => {
-    const entries = await analyze(
+    const { entries } = await analyze(
       snapshot(INIT),
       snapshot({ name: "1_init", sql: "-- edited" }, { name: "2_bad", sql: "DROP;" }),
     );
     expect(entries.map((e) => e.ruleId)).toEqual(["RG-DB-020", "RG-DB-021"]);
+  });
+
+  it("also returns the history and base's used set, for the report", async () => {
+    const result = await analyze(
+      snapshot(INIT),
+      snapshot(INIT, { name: "2_new", sql: "-- nothing yet\n" }),
+    );
+    expect(result.history.map((h) => [h.name, h.status])).toEqual([
+      ["1_init", "unchanged"],
+      ["2_new", "new"],
+    ]);
+    expect([...result.used.tables.keys()]).toEqual(["User"]);
   });
 
   it("reads base's schema, so an invalid one is a tool failure", async () => {

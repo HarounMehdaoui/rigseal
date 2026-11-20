@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { GitError } from "../git/errors.ts";
 import { SchemaError } from "../schema/schema-error.ts";
 import { failureMessage } from "./failure-message.ts";
+import { OutputError } from "./output-error.ts";
 import { UsageError } from "./usage-error.ts";
 
 describe("failureMessage", () => {
@@ -23,6 +24,12 @@ describe("failureMessage", () => {
   it("reports git errors as they are", () => {
     expect(failureMessage(new GitError("REF_NOT_FOUND", '"nope" is not a branch'))).toBe(
       'rollback-gate: "nope" is not a branch',
+    );
+  });
+
+  it("reports a report file that can't be written as it is", () => {
+    expect(failureMessage(new OutputError("can't write the JSON report to x: EACCES"))).toBe(
+      "rollback-gate: can't write the JSON report to x: EACCES",
     );
   });
 

@@ -1,0 +1,42 @@
+<!-- rollback-gate -->
+## Rollback Gate: 🔴 UNSAFE
+
+Base `v1.0.0` (`1111111`, tag) → head `HEAD` (`2222222`)
+
+2 UNSAFE · 2 RISKY · 2 SAFE notes
+
+### 🔴 UNSAFE · RG-DB-002 · `User.name`
+`prisma/migrations/20261110000000_cleanup/migration.sql:2`
+
+Base uses column "User"."name": by default base's Prisma client selects every scalar column of a model, so every query on the model fails, not only the ones that use this field.
+
+**Fix:** Retire the field first (`@ignore` it and stop writing it; make it nullable if it is required), then drop it one release later.
+
+### 🔴 UNSAFE · RG-DB-021 · `20261111000000_typo`
+`prisma/migrations/20261111000000_typo/migration.sql`
+
+Postgres's parser rejects this migration at line 1: "syntax error at or near "ALTR"". Rollback Gate can't tell what it does to base.
+
+**Fix:** Fix the SQL so Postgres's own parser accepts it.
+
+### 🟡 RISKY · RG-DB-020 · `20261105000000_seed`
+`prisma/migrations/20261105000000_seed/migration.sql`
+
+Migration 20261105000000\_seed was released in base and edited in head. Environments built from head's history now differ from production, which applied the old version.
+
+**Fix:** Never edit or delete an applied migration: restore the released version and put the change in a new migration.
+
+### 🟡 RISKY · RG-DB-019 · `Post`
+`prisma/migrations/20261110000000_cleanup/migration.sql:3`
+
+The DELETE removes rows from "Post", which base reads: base code that expects the deleted rows (lookups, seeds, references) fails or misbehaves.
+
+**Fix:** Soft-delete, or delete in a later release once base no longer reads those rows.
+
+<details>
+<summary>2 SAFE notes</summary>
+
+- RG-DB-000 · `User_id_idx` · `prisma/migrations/20261110000000_cleanup/migration.sql:1` — A non-unique index doesn't change what base can read or write.
+- RG-DB-001 · ``odd`|<b>*_name`` · `prisma/migrations/20261110000000_cleanup/migration.sql:4` — Base doesn't use table "odd\`\|\<b\>\*\_name" (no model maps to it, or it's `@@ignore`), so dropping it can't break base.
+
+</details>

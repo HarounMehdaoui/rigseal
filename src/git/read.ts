@@ -1,4 +1,5 @@
 // Reads files and folders as they are at a ref, never from the working tree.
+import { normalizeRepoPath } from "../repo-path.ts";
 import { GitError } from "./errors.ts";
 import { runGit } from "./git.ts";
 import { lookup, lsTree, SYMLINK_MODE } from "./ls-tree.ts";
@@ -10,14 +11,9 @@ export interface DirEntry {
   readonly kind: "file" | "dir" | "other";
 }
 
-/** Repo-relative POSIX path without "./" in front or "/" at the end; "" is the repo root. */
-function normalize(path: string): string {
-  return path.replace(/^(\.\/)+/, "").replace(/\/+$/, "");
-}
-
 export async function readFile(repo: string, ref: string, path: string): Promise<string> {
   const sha = await resolveCommit(repo, ref);
-  const p = normalize(path);
+  const p = normalizeRepoPath(path);
   const entry = p === "" ? undefined : await lookup(repo, sha, p);
   if (p === "" || entry?.type === "tree") {
     throw new GitError("NOT_A_FILE", `"${path}" is a folder at ${ref}, not a file`);
@@ -38,7 +34,7 @@ export async function listDir(
   path: string,
 ): Promise<readonly DirEntry[]> {
   const sha = await resolveCommit(repo, ref);
-  const p = normalize(path);
+  const p = normalizeRepoPath(path);
   if (p !== "") {
     const entry = await lookup(repo, sha, p);
     if (entry === undefined) {

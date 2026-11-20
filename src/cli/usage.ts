@@ -15,6 +15,10 @@ Head and paths:
   --schema <path>         schema file, repo-relative (default: prisma/schema.prisma)
   --migrations <path>     migrations folder, repo-relative (default: prisma/migrations)
 
+Reports (the text report always goes to stdout):
+  --json <file>           also write the JSON report (schemaVersion 1, byte-identical across runs)
+  --markdown <file>       also write the Markdown report (for a PR comment or job summary)
+
 Exit code:
   --fail-on <level>       "unsafe" (default) or "risky": the lowest verdict that exits 1
   -h, --help              show this text

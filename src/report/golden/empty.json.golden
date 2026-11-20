@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "tool": {
+    "name": "rollback-gate",
+    "version": "0.0.0"
+  },
+  "verdict": "SAFE",
+  "base": {
+    "ref": "main",
+    "sha": "3333333333333333333333333333333333333333",
+    "method": "fallback"
+  },
+  "head": {
+    "ref": "HEAD",
+    "sha": "4444444444444444444444444444444444444444"
+  },
+  "warnings": [
+    "No tag matching \"v*\" is reachable from \"main\", so base is \"main\" itself.",
+    "Base's schema maps no tables, so nothing in head can break it. Check that base is the right release."
+  ],
+  "migrations": [],
+  "entries": []
+}
