@@ -29,7 +29,7 @@ describe("judge", () => {
     expect(judge(change, context)).toMatchObject({ ruleId: "RG-DB-002", severity: "SAFE" });
   });
 
-  it("gives every change of every normalizer fixture exactly one entry, at the change's own source (D28)", async () => {
+  it("gives every change of every normalizer fixture exactly one entry, at the change's own source", async () => {
     const dir = new URL("../sql/normalize/fixtures/", import.meta.url);
     const used = { tables: new Map(), enums: new Map() } satisfies UsedSet;
     let total = 0;

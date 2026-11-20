@@ -4,7 +4,7 @@ import { at } from "./rule-test-support.ts";
 
 const s = at(2);
 
-describe("RG-DB-000 · recognized, harmless, no rule (D40)", () => {
+describe("RG-DB-000 · recognized, harmless, no rule", () => {
   it.each<[HarmlessChange, string, RegExp]>([
     [
       { kind: "SetDefault", table: "User", column: "role", source: s },

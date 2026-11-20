@@ -6,7 +6,7 @@ import { pgTypeName } from "./pg-type-names.ts";
 import { unexpected } from "./schema-error.ts";
 import type { ColumnDefault } from "./types.ts";
 
-/** Prisma's native type for a scalar without `@db.*`, in Postgres's spelling (RULES §4, §6 row 2). */
+/** Prisma's native type for a scalar without `@db.*`, in Postgres's spelling. */
 const DEFAULT_TYPES: Readonly<Record<string, { readonly name: string; readonly args: string[] }>> =
   {
     String: { name: "text", args: [] },

@@ -1,4 +1,4 @@
-// Sends each change to the rule that judges its kind; every change gets exactly one entry (D21, D28).
+// Sends each change to the rule that judges its kind; every change gets exactly one entry.
 import type { Change, Entry } from "../types.ts";
 import { alterColumnType } from "./alter-column-type.ts";
 import { checkConstraint } from "./check-constraint.ts";

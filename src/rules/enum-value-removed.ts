@@ -1,4 +1,4 @@
-// RG-DB-016 · Enum value removed (RULES §4): from an enum base uses → RISKY (base may still write it).
+// RG-DB-016 · Enum value removed: from an enum base uses → RISKY (base may still write it).
 import type { Entry, RemoveEnumValue } from "../types.ts";
 import type { RuleContext } from "./context.ts";
 

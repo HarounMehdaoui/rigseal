@@ -11,7 +11,7 @@ const DEFAULTS = {
 };
 
 describe("parseCliArgs", () => {
-  it("fills every default when no flag is given (D6, D46)", () => {
+  it("fills every default when no flag is given", () => {
     expect(parseCliArgs([])).toEqual({ kind: "run", options: DEFAULTS });
   });
 
@@ -47,7 +47,7 @@ describe("parseCliArgs", () => {
     });
   });
 
-  it("takes an explicit base instead of the tag lookup (D47)", () => {
+  it("takes an explicit base instead of the tag lookup", () => {
     expect(parseCliArgs(["--base", "v1.2.0"])).toEqual({
       kind: "run",
       options: { ...DEFAULTS, base: { kind: "explicit", ref: "v1.2.0" } },

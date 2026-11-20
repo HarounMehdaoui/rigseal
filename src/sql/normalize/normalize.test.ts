@@ -62,7 +62,7 @@ describe("normalize: real Prisma output", () => {
     ]);
   });
 
-  it("a model rename is DropTable + CreateTable (RULES §6 row 1)", async () => {
+  it("a model rename is DropTable + CreateTable (what Prisma generates)", async () => {
     expect((await changes(fixture("rename-model"))).map(what)).toEqual([
       { kind: "DropTable", table: "User" },
       { kind: "CreateTable", table: "Person" },
@@ -227,7 +227,7 @@ describe("normalize: constraints, indexes and enums, real Prisma output", () => 
     ]);
   });
 
-  it("a primary- or foreign-key rename (RENAME CONSTRAINT) → RenameIndex (RULES §6 row 10)", async () => {
+  it("a primary- or foreign-key rename (RENAME CONSTRAINT) → RenameIndex (what Prisma generates)", async () => {
     expect((await changes(fixture("rename-constraints"))).map(what)).toEqual([
       { kind: "RenameIndex", name: "User_pkey", newName: "user_pk" },
       { kind: "RenameIndex", name: "Post_authorId_fkey", newName: "post_author_fk" },
@@ -457,7 +457,7 @@ describe("normalize: hand-written SQL", () => {
   });
 });
 
-describe("statement coverage (D28): every statement is skip-listed or gives at least one change", () => {
+describe("statement coverage: every statement is skip-listed or gives at least one change", () => {
   const handWritten = [
     'ALTER TABLE "User" RENAME COLUMN "a" TO "b";',
     'ALTER TABLE "User" ADD CONSTRAINT "c" CHECK ("age" > 0), ENABLE ROW LEVEL SECURITY;',

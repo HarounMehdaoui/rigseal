@@ -2,7 +2,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import type { MigrationSource, Severity, Snapshot, StatementSource } from "./types.ts";
 
-/** What a scenario test compares for each entry (D41): no reason or fix prose. */
+/** What a scenario test compares for each entry: no reason or fix prose. */
 export interface ExpectedEntry {
   readonly ruleId: string;
   readonly severity: Severity;
@@ -40,7 +40,7 @@ export function loadScenario(name: string): Scenario {
   };
 }
 
-/** `prisma/schema.prisma` plus every `prisma/migrations/<folder>/migration.sql` (Prisma's default paths, D6). */
+/** `prisma/schema.prisma` plus every `prisma/migrations/<folder>/migration.sql` (Prisma's default paths). */
 function snapshot(dir: URL): Snapshot {
   const schema = readFileSync(new URL("prisma/schema.prisma", dir), "utf8");
   const migrationsDir = new URL("prisma/migrations/", dir);

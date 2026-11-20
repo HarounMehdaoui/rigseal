@@ -11,7 +11,7 @@ afterEach(async () => {
 });
 
 describe("chooseBase", () => {
-  it("uses an explicit ref as it is, with method explicit (D47)", async () => {
+  it("uses an explicit ref as it is, with method explicit", async () => {
     const first = await repo.commit("first");
     await repo.git("tag", "v9");
     await repo.commit("second");
@@ -23,7 +23,7 @@ describe("chooseBase", () => {
     });
   });
 
-  it("looks up the release tag otherwise (D5)", async () => {
+  it("looks up the release tag otherwise", async () => {
     const released = await repo.commit("release");
     await repo.git("tag", "v1");
     await repo.commit("work");

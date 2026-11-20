@@ -1,4 +1,4 @@
-// The one place that runs git (D34): execFile with an argument array, so no shell ever parses input.
+// The one place that runs git: execFile with an argument array, so no shell ever parses input.
 import { type ExecFileException, execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { GitError } from "./errors.ts";

@@ -1,2 +1,2 @@
--- Hand-written: Prisma would DROP and ADD the column instead (RULES §6 row 1).
+-- Hand-written: Prisma would DROP and ADD the column instead.
 ALTER TABLE "User" RENAME COLUMN "name" TO "fullName";

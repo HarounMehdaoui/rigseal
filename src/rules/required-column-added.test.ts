@@ -47,14 +47,14 @@ describe("RG-DB-005 · required column added", () => {
     });
   });
 
-  it("is UNSAFE for the backfill hand-edit: ADD … DEFAULT '' then DROP DEFAULT (Day-1 lab, D33)", () => {
+  it("is UNSAFE for the backfill hand-edit: ADD … DEFAULT '' then DROP DEFAULT (the lab's case)", () => {
     const entry = judge(add(true, true), [
       { kind: "DropDefault", table: "User", column: "phone", source: at(4) },
     ]);
     expect(entry).toMatchObject({ severity: "UNSAFE", source: at(2) });
   });
 
-  it("is UNSAFE for ADD nullable, then SET NOT NULL later in the release (D33)", () => {
+  it("is UNSAFE for ADD nullable, then SET NOT NULL later in the release", () => {
     const later: Change[] = [{ kind: "SetNotNull", table: "User", column: "phone", source: at(9) }];
     expect(judge(add(false, false), later).severity).toBe("UNSAFE");
   });

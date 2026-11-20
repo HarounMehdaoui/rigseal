@@ -1,4 +1,4 @@
-// RG-DB-006/007/008 · Type changes (RULES §4, D44): narrowing → RISKY, scalar-changing widening → RISKY, unknown → UNSAFE.
+// RG-DB-006/007/008 · Type changes: narrowing → RISKY, scalar-changing widening → RISKY, unknown → UNSAFE.
 import type { AlterColumnType, Entry, PgType, Severity } from "../types.ts";
 import type { RuleContext } from "./context.ts";
 import { scalarCovers } from "./scalar-coverage.ts";
@@ -69,7 +69,7 @@ export function alterColumnType(change: AlterColumnType, { used }: RuleContext):
       return entry(
         WIDENING,
         "RISKY",
-        `Column ${name} widens from ${from} to ${to}, which base's ${column.prismaType} can't fully represent: Prisma reads larger values without an error, so values head writes beyond ${column.prismaType}'s range come back silently wrong (RULES §6 row 3).`,
+        `Column ${name} widens from ${from} to ${to}, which base's ${column.prismaType} can't fully represent: Prisma reads larger values without an error, so values head writes beyond ${column.prismaType}'s range come back silently wrong.`,
         `Widen base's schema type first (for example Int → BigInt), then widen the column.`,
       );
     case "narrowing":

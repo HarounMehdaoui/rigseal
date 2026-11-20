@@ -1,4 +1,4 @@
-# Throwaway Postgres for the Day-1 rollback lab.
+# Throwaway Postgres for the rollback lab.
 # log_statement=all makes Postgres log every SQL statement it receives,
 # so we see what Prisma actually sent, not what we think it sent.
 services:

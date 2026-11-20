@@ -1,4 +1,4 @@
-// RG-DB-020 · Edited or removed migration (RULES §4, D18).
+// RG-DB-020 · Edited or removed migration.
 // RISKY, not UNSAFE: Prisma never re-runs an applied migration, so production and base's rollback
 // are unaffected; only environments built fresh from head's history now differ from production.
 import type { EditedMigration, Entry } from "../types.ts";

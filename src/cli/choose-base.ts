@@ -1,4 +1,4 @@
-// Turns the base option into a commit: the explicit ref as given (D47), or the release-tag lookup (D5).
+// Turns the base option into a commit: the explicit ref as given, or the release-tag lookup.
 import { type BaseResolution, resolveBase } from "../git/base.ts";
 import { resolveCommit } from "../git/resolve-commit.ts";
 import type { BaseOption } from "./args.ts";

@@ -1,4 +1,4 @@
-// Follows a column through a release's changes (renames, NOT NULL, defaults, drops) to where it ends up (D33).
+// Follows a column through a release's changes (renames, NOT NULL, defaults, drops) to where it ends up.
 import type { AddColumn, Change } from "../types.ts";
 import type { RuleContext } from "./context.ts";
 
@@ -17,7 +17,7 @@ export interface ColumnStart {
   readonly hasDefault: boolean;
 }
 
-/** A column added in this release: only the changes after the ADD count (D33). */
+/** A column added in this release: only the changes after the ADD count. */
 export function columnEndState(added: AddColumn, context: RuleContext): ColumnEndState {
   const index = context.changes.indexOf(added);
   return followColumn(added, index === -1 ? [] : context.changes.slice(index + 1));

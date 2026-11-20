@@ -1,9 +1,9 @@
-// Reads one side (base or head) at a commit into a Snapshot: the schema text and every migration's SQL (D6, D48).
+// Reads one side (base or head) at a commit into a Snapshot: the schema text and every migration's SQL.
 import type { Snapshot } from "../types.ts";
 import { GitError } from "./errors.ts";
 import { listDir, readFile } from "./read.ts";
 
-/** Repo-relative paths (D6): Prisma's defaults unless the user passed `--schema` / `--migrations`. */
+/** Repo-relative paths: Prisma's defaults unless the user passed `--schema` / `--migrations`. */
 export interface SnapshotPaths {
   readonly schema: string;
   readonly migrations: string;
@@ -28,7 +28,7 @@ async function readMigrations(
   try {
     entries = await listDir(repo, sha, dir);
   } catch (err) {
-    // No folder yet: a project before its first migration (D48).
+    // No folder yet: a project before its first migration.
     if (err instanceof GitError && err.code === "PATH_NOT_FOUND") return [];
     throw err;
   }
@@ -44,7 +44,7 @@ async function readMigrations(
         `"${dir}/${entry.name}" at ${sha} is a symlink or submodule, not a migration folder`,
       );
     }
-    // A folder without migration.sql surfaces as readFile's PATH_NOT_FOUND, naming the path (D48).
+    // A folder without migration.sql surfaces as readFile's PATH_NOT_FOUND, naming the path.
     const sql = await readFile(repo, sha, `${dir}/${entry.name}/migration.sql`);
     migrations.push({ name: entry.name, sql });
   }

@@ -1,4 +1,4 @@
-// RG-DB-021 · Unparsable SQL (RULES §4, D20, D27): a migration Postgres's parser rejects → UNSAFE.
+// RG-DB-021 · Unparsable SQL: a migration Postgres's parser rejects → UNSAFE.
 // UNSAFE, not RISKY: the tool can't tell what the migration does to base, so it fails closed.
 import type { Entry, Unparsable } from "../types.ts";
 

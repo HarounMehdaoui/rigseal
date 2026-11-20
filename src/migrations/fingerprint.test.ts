@@ -3,7 +3,7 @@ import { fingerprint } from "./fingerprint.ts";
 
 const INIT = 'CREATE TABLE "User" (\n    "id" SERIAL NOT NULL,\n    "name" TEXT NOT NULL\n);\n';
 
-describe("fingerprint (D19)", () => {
+describe("fingerprint", () => {
   it("hashes the same content with LF and with CRLF identically", () => {
     const crlf = INIT.replaceAll("\n", "\r\n");
     expect(crlf).not.toBe(INIT);

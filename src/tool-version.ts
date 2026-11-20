@@ -1,4 +1,4 @@
-// The tool's own version for the report (D24): `version` from package.json, read once at run time.
+// The tool's own version for the report: `version` from package.json, read once at run time.
 import { readFileSync } from "node:fs";
 
 /**

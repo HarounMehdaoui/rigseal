@@ -1,4 +1,4 @@
-// Compares base's migration folders with head's: new, unchanged, modified or removed (D9, D18).
+// Compares base's migration folders with head's: new, unchanged, modified or removed.
 
 import { byCodeUnit } from "../compare.ts";
 import type { MigrationFolder } from "../types.ts";

@@ -1,4 +1,4 @@
-// The verdict over all entries: the worst one wins, and no entries at all is SAFE (D2).
+// The verdict over all entries: the worst one wins, and no entries at all is SAFE.
 import type { Entry, Severity } from "./types.ts";
 
 const RANK: Readonly<Record<Severity, number>> = { SAFE: 0, RISKY: 1, UNSAFE: 2 };

@@ -1,4 +1,4 @@
-// Assembles the Report (D24, D49) from an analysis and the run's facts: version, base, head, migrations folder.
+// Assembles the Report from an analysis and the run's facts: version, base, head, migrations folder.
 import type { Analysis } from "../analyze.ts";
 import type { HistoryEntry } from "../migrations/history.ts";
 import { normalizeRepoPath } from "../repo-path.ts";
@@ -29,7 +29,7 @@ export function buildReport({ version, base, head, migrationsDir, analysis }: Re
 
   const warnings: string[] = [];
   if (base.warning !== undefined) warnings.push(base.warning);
-  // D37: an empty used set makes every change look SAFE; say so instead of staying quiet.
+  // An empty used set makes every change look SAFE; say so instead of staying quiet.
   if (analysis.used.tables.size === 0) warnings.push(NO_TABLES);
 
   return {
@@ -58,7 +58,7 @@ function entry(e: Entry, file: string): ReportEntry {
     severity: e.severity,
     target: e.target,
     file,
-    // Whole-migration entries (RG-DB-020, RG-DB-021) sit at line 0 of their file (RULES §3).
+    // Whole-migration entries (RG-DB-020, RG-DB-021) sit at line 0 of their file.
     line: statement ? e.source.line : 0,
     action: statement ? e.source.action : 0,
     reason: e.reason,

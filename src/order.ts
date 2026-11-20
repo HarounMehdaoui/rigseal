@@ -1,11 +1,11 @@
-// The entry order for JSON (D24, D29): by file, line, rule ID, target, action; whole-migration entries at line 0.
+// The entry order for JSON: by file, line, rule ID, target, action; whole-migration entries at line 0.
 import { byCodeUnit } from "./compare.ts";
 import type { Entry } from "./types.ts";
 
 /**
  * Every migration's file is `<migrations dir>/<name>/migration.sql`, so the migration name orders
- * the files. Code-unit order, never the locale, so the bytes are the same on every machine (D24).
- * Stable, so exact duplicates keep their place (D29 keeps duplicates).
+ * the files. Code-unit order, never the locale, so the bytes are the same on every machine.
+ * Stable, so exact duplicates keep their place (duplicates are kept, not merged).
  */
 export function sortEntries(entries: readonly Entry[]): Entry[] {
   return [...entries].sort(compareEntries);

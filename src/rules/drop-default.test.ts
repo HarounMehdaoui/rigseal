@@ -47,7 +47,7 @@ describe("RG-DB-011 · drop default", () => {
     expect(entry.fix).toBeUndefined();
   });
 
-  it("gives a SAFE note for a column added in this release (the lab's backfill hand-edit, D33)", () => {
+  it("gives a SAFE note for a column added in this release (the lab's backfill hand-edit)", () => {
     const added: AddColumn = {
       kind: "AddColumn",
       table: "User",

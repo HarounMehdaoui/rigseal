@@ -1,4 +1,4 @@
-// Which Postgres types each Prisma scalar represents in full (RULES §4, RG-DB-007).
+// Which Postgres types each Prisma scalar represents in full (RG-DB-007).
 import type { PgType } from "../types.ts";
 
 /** A JavaScript Date keeps milliseconds, so DateTime holds timestamp(p) only for p ≤ 3. */

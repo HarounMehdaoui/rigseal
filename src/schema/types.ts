@@ -1,4 +1,4 @@
-// The used set's shape: what base's Prisma client reads and writes, under database names (RULES §2).
+// The used set's shape: what base's Prisma client reads and writes, under database names.
 import type { PgType } from "../types.ts";
 
 /** Which `@default` a field has: a fixed value (`literal`) or the function that makes the value. */
@@ -14,7 +14,7 @@ export type DefaultKind =
 
 export interface ColumnDefault {
   readonly kind: DefaultKind;
-  /** Who fills the value when base's code omits the field (RULES §6 row 5, RG-DB-011). */
+  /** Who fills the value when base's code omits the field (RG-DB-011). */
   readonly appliedBy: "database" | "prisma";
 }
 

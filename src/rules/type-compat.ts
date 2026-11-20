@@ -1,4 +1,4 @@
-// The widening list (RULES §4): classifies a base → head Postgres type as same, widening, narrowing or unknown.
+// The widening list: classifies a base → head Postgres type as same, widening, narrowing or unknown.
 import type { PgType } from "../types.ts";
 
 export type TypeRelation = "same" | "widening" | "narrowing" | "unknown";

@@ -1,6 +1,5 @@
-// Scenario tests: each folder under scenarios/ runs through the pure core with no git (PLAN §5, D41).
-// The north star (T4.1) is the four-release rename from RULES §5, expecting SAFE, RISKY, SAFE, SAFE.
-// While its rules were missing it ran as `it.fails` (D39); since T5.1 every scenario is a normal test.
+// Scenario tests: each folder under scenarios/ runs through the pure core with no git.
+// The north star is the four-release rename (expand, switch, retire, contract): SAFE, RISKY, SAFE, SAFE.
 import { describe, expect, it } from "vitest";
 import { analyze } from "./analyze.ts";
 import { loadScenario, scenarioNames } from "./scenario-files.ts";

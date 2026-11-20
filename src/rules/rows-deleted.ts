@@ -1,4 +1,4 @@
-// RG-DB-019 · Rows deleted (RULES §4): DELETE or TRUNCATE on a table base uses → RISKY.
+// RG-DB-019 · Rows deleted: DELETE or TRUNCATE on a table base uses → RISKY.
 import type { DeleteRows, Entry } from "../types.ts";
 import type { RuleContext } from "./context.ts";
 import { tableTarget } from "./target.ts";

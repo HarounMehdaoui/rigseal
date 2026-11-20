@@ -1,4 +1,4 @@
-// One fixture per rule in RULES §2, plus the empty-schema case (D37).
+// One fixture per rule of what "used by base" means, plus the empty-schema case.
 import { describe, expect, it } from "vitest";
 import { normalize } from "../sql/normalize/normalize.ts";
 import { parseSql } from "../sql/parse.ts";
@@ -23,7 +23,7 @@ function column(set: UsedSet, tableName: string, name: string) {
   return found;
 }
 
-describe("buildUsedSet: RULES §2", () => {
+describe("buildUsedSet: what base uses", () => {
   it("uses a table when a model maps to it and the model is not @@ignore", () => {
     const set = used(`
       model User {
@@ -267,7 +267,7 @@ describe("buildUsedSet: RULES §2", () => {
 });
 
 describe("buildUsedSet: empty schema", () => {
-  it("accepts a schema with no models as an empty used set (D37: the report warns)", () => {
+  it("accepts a schema with no models as an empty used set (the report warns)", () => {
     const set = buildUsedSet(DATASOURCE);
     expect(set.tables.size).toBe(0);
     expect(set.enums.size).toBe(0);

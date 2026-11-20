@@ -1,4 +1,4 @@
-// e2e support: runs the built CLI (`node dist/cli.js`, D55) in a repo and returns its exit code, output and JSON report.
+// e2e support: runs the built CLI (`node dist/cli.js`, what ships) in a repo and returns its exit code, output and JSON report.
 import { execFile } from "node:child_process";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";

@@ -1,4 +1,4 @@
-// RG-DB-015 · Enum value added (RULES §4): to an enum base uses → RISKY (base can't read the new value).
+// RG-DB-015 · Enum value added: to an enum base uses → RISKY (base can't read the new value).
 import type { AddEnumValue, Entry } from "../types.ts";
 import type { RuleContext } from "./context.ts";
 import { objectTarget } from "./target.ts";
@@ -20,7 +20,7 @@ export function enumValueAdded(change: AddEnumValue, { used }: RuleContext): Ent
     ruleId: RULE_ID,
     severity: "RISKY",
     target,
-    reason: `Base reads enum "${change.enum}": base reads of rows that hold '${change.value}' fail, because Prisma raises P2023 for a value its client doesn't know (RULES §6 row 7).`,
+    reason: `Base reads enum "${change.enum}": base reads of rows that hold '${change.value}' fail, because Prisma raises P2023 for a value its client doesn't know.`,
     fix: "Add the value in one release without writing it, and start writing it one release later.",
     source: change.source,
   };

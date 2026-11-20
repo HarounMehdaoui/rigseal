@@ -33,7 +33,7 @@ describe("readSnapshot", () => {
     });
   });
 
-  it("reads a missing migrations folder as no migrations (D48)", async () => {
+  it("reads a missing migrations folder as no migrations", async () => {
     const sha = await repo.commit("first", { "prisma/schema.prisma": "x\n" });
     expect(await readSnapshot(repo.dir, sha, PATHS)).toEqual({ schema: "x\n", migrations: [] });
   });
@@ -56,7 +56,7 @@ describe("readSnapshot", () => {
     });
   });
 
-  it("fails on a migration folder without migration.sql (D48)", async () => {
+  it("fails on a migration folder without migration.sql", async () => {
     const sha = await repo.commit("broken", {
       "prisma/schema.prisma": "x\n",
       "prisma/migrations/20261101000000_init/notes.txt": "oops\n",

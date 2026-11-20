@@ -48,7 +48,7 @@ export function readColumnDef(def: ColumnDef): ColumnShape | undefined {
         hasDefault = true;
         break;
       default:
-        // UNIQUE, CHECK, REFERENCES: constraints, not nullability or defaults (T3.3).
+        // UNIQUE, CHECK, REFERENCES: constraints, not nullability or defaults.
         break;
     }
   }

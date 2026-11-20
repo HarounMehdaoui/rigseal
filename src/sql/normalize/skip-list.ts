@@ -1,4 +1,4 @@
-// The skip list (ARCHITECTURE, D28): statements that change nothing base could notice, so they give no change.
+// The skip list: statements that change nothing base could notice, so they give no change.
 import type { Node } from "../parse.ts";
 
 /** BEGIN / START TRANSACTION / COMMIT, and Prisma's `CREATE SCHEMA IF NOT EXISTS "public"`. */

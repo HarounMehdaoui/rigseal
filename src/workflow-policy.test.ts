@@ -1,4 +1,4 @@
-// Repo policy, not a source file: no workflow or action file may use the `_target` PR trigger (D17, CLAUDE.md hard rule).
+// Repo policy, not a source file: no workflow or action file may use the `_target` PR trigger.
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";

@@ -3,7 +3,7 @@ import { scalarCovers } from "./scalar-coverage.ts";
 
 const type = (name: string, ...args: string[]) => ({ name, args, array: false });
 
-describe("scalarCovers (RULES §4)", () => {
+describe("scalarCovers", () => {
   it.each([
     ["Int", type("int2")],
     ["Int", type("int4")],

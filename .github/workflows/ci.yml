@@ -31,7 +31,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
-      # Builds dist/ and runs the CLI on throwaway git repos (D54, D55).
+      # Builds dist/ and runs the CLI on throwaway git repos.
       - run: npm run test:e2e
 
   actionlint:
@@ -42,7 +42,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # Pinned release binary, checked against the SHA-256 from its release (D59).
+      # Pinned release binary, checked against the SHA-256 from its release.
       - name: Install actionlint 1.7.12
         run: |
           curl -fsSLo "$RUNNER_TEMP/actionlint.tar.gz" \

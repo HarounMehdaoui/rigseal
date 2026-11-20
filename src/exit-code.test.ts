@@ -13,7 +13,7 @@ function entry(severity: Severity): Entry {
   };
 }
 
-describe("findings → verdict → exit code (D2, D14)", () => {
+describe("findings → verdict → exit code", () => {
   it.each<[Severity[], FailOn, Severity, 0 | 1]>([
     [[], "unsafe", "SAFE", 0],
     [["SAFE", "SAFE"], "unsafe", "SAFE", 0],

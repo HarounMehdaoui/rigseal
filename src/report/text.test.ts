@@ -11,7 +11,7 @@ describe("renderText", () => {
     await expect(renderText(await emptyReport())).toMatchFileSnapshot("golden/empty.txt.golden");
   });
 
-  it("lists findings worst first, then SAFE notes one line each (D29, D51)", async () => {
+  it("lists findings worst first, then SAFE notes one line each", async () => {
     const text = renderText(await mixedReport());
     const unsafe = text.indexOf("UNSAFE  RG-DB-");
     const risky = text.indexOf("RISKY  RG-DB-");

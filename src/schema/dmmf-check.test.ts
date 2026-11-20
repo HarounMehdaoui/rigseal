@@ -1,5 +1,5 @@
-// T2.2: does getDMMF (Prisma 7.10.1) give us everything the rules read? One test per D23 criterion.
-// If any of these ever fails after a Prisma upgrade, D7's fallback applies: switch to prisma-ast.
+// Does getDMMF (Prisma 7.10.1) give us everything the rules read? One test per criterion.
+// If any of these ever fails after a Prisma upgrade, switch the schema reader to prisma-ast.
 import { getDMMF } from "@prisma/get-dmmf";
 import { describe, expect, it } from "vitest";
 
@@ -58,7 +58,7 @@ function field(modelName: string, fieldName: string) {
   return found;
 }
 
-describe("getDMMF meets D23's five criteria", () => {
+describe("getDMMF meets the schema reader's five criteria", () => {
   it("1. gives database names from @map and @@map (null when unmapped)", () => {
     expect(model("User").dbName).toBe("users");
     expect(model("Post").dbName).toBeNull();

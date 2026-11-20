@@ -1,4 +1,4 @@
-// Splits entries for people (D29): findings UNSAFE first then RISKY, and the SAFE notes apart, each in JSON order.
+// Splits entries for people: findings UNSAFE first then RISKY, and the SAFE notes apart, each in JSON order.
 import type { ReportEntry } from "./types.ts";
 
 export interface ForPeople {

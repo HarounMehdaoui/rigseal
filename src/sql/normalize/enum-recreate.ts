@@ -6,7 +6,7 @@ const NEW_SUFFIX = "_new";
 const OLD_SUFFIX = "_old";
 
 /**
- * The sequence (RULES §4, §6 row 8), all consecutive: CREATE TYPE "X_new"; per column an optional
+ * The sequence, all consecutive: CREATE TYPE "X_new"; per column an optional
  * DROP DEFAULT then ALTER … TYPE "X_new" USING …; RENAME "X" → "X_old"; RENAME "X_new" → "X";
  * DROP TYPE "X_old"; SET DEFAULT for each dropped default, in the same order. Every column base has
  * with the enum must be retyped. Anything else, or an enum base doesn't use, is left as it is: the

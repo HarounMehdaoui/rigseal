@@ -1,10 +1,10 @@
-// The report's shape (D24, D49): the one data structure the JSON, Markdown and text renderers all read.
+// The report's shape: the one data structure the JSON, Markdown and text renderers all read.
 import type { MigrationStatus } from "../migrations/history.ts";
 import type { Severity } from "../types.ts";
 
 export type BaseMethod = "tag" | "fallback" | "explicit";
 
-/** One entry, flattened: every entry has the same keys; whole-migration entries use line 0 (RULES §3). */
+/** One entry, flattened: every entry has the same keys; whole-migration entries use line 0. */
 export interface ReportEntry {
   readonly ruleId: string;
   readonly severity: Severity;
@@ -14,7 +14,7 @@ export interface ReportEntry {
   readonly line: number;
   readonly action: number;
   readonly reason: string;
-  /** Left out when the rule gives none: the JSON never holds a null (D40, D49). */
+  /** Left out when the rule gives none: the JSON never holds a null. */
   readonly fix?: string;
 }
 
@@ -33,6 +33,6 @@ export interface Report {
   readonly head: { readonly ref: string; readonly sha: string };
   readonly warnings: readonly string[];
   readonly migrations: readonly ReportMigration[];
-  /** In D29 order: file, line, rule ID, target, action. */
+  /** In report order: file, line, rule ID, target, action. */
   readonly entries: readonly ReportEntry[];
 }

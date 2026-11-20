@@ -1,9 +1,9 @@
-// Renders the Report as Markdown for the PR comment and job summary (D50): findings worst first, SAFE notes folded.
+// Renders the Report as Markdown for the PR comment and job summary: findings worst first, SAFE notes folded.
 import { codeSpan, escapeMarkdown } from "./markdown-text.ts";
 import type { Report, ReportEntry } from "./types.ts";
 import { worstFirst } from "./worst-first.ts";
 
-/** Day 7's action finds its own sticky comment by this marker (D17). */
+/** The GitHub Action finds its own sticky comment by this marker. */
 const MARKER = "<!-- rollback-gate -->";
 
 const BADGE = { SAFE: "🟢", RISKY: "🟡", UNSAFE: "🔴" } as const;

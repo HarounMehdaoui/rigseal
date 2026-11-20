@@ -1,8 +1,8 @@
-// The only file that imports libpg-query (D11): SQL text → statements with line numbers, or a failure.
+// The only file that imports libpg-query: SQL text → statements with line numbers, or a failure.
 import { hasSqlDetails, type Node, parse } from "libpg-query";
 import { byteOffsetToLine, codePointToLine } from "./line-index.ts";
 
-// The AST types the normalizer reads, re-exported so this stays the one door to libpg-query (D38).
+// The AST types the normalizer reads, re-exported so this stays the one door to libpg-query.
 export type {
   AlterEnumStmt,
   AlterTableCmd,
@@ -34,7 +34,7 @@ export interface ParsedSql {
   readonly statements: readonly Statement[];
 }
 
-/** Postgres's parser rejected the text; it becomes RG-DB-021, never exit 2 (D20). */
+/** Postgres's parser rejected the text; it becomes RG-DB-021, never exit 2. */
 export interface ParseFailure {
   readonly kind: "failure";
   readonly message: string;
@@ -57,7 +57,7 @@ export async function parseSql(sql: string): Promise<ParsedSql | ParseFailure> {
   } catch (error) {
     if (!hasSqlDetails(error) || error.sqlDetails === undefined) throw error;
     const { message, cursorPosition } = error.sqlDetails;
-    // cursorPosition counts code points from 0 (checked in T3.1); it's absent for some errors.
+    // cursorPosition counts code points from 0 (checked by a test); it's absent for some errors.
     const line = Number.isInteger(cursorPosition) ? codePointToLine(sql, cursorPosition) : null;
     return { kind: "failure", message, line };
   }

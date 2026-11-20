@@ -47,7 +47,7 @@ describe("cli entry point", () => {
   });
 });
 
-describe("cli determinism (D24)", () => {
+describe("cli determinism", () => {
   it("writes byte-identical JSON and Markdown when run twice on the same inputs", async () => {
     await repo.commit(
       "release",

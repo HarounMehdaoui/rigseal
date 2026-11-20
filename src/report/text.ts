@@ -1,4 +1,4 @@
-// Renders the Report as terminal text: verdict, warnings, base → head, findings worst first, then SAFE notes one line each (D29, D51).
+// Renders the Report as terminal text: verdict, warnings, base → head, findings worst first, then SAFE notes one line each.
 import { terminalText as t } from "./terminal-text.ts";
 import type { Report, ReportEntry } from "./types.ts";
 import { worstFirst } from "./worst-first.ts";

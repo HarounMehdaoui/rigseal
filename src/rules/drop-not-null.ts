@@ -1,4 +1,4 @@
-// RG-DB-010 · Drop NOT NULL (RULES §4): on a column base has as required → RISKY; otherwise a SAFE note.
+// RG-DB-010 · Drop NOT NULL: on a column base has as required → RISKY; otherwise a SAFE note.
 import type { DropNotNull, Entry } from "../types.ts";
 import { addedInRelease } from "./added-in-release.ts";
 import type { RuleContext } from "./context.ts";
@@ -16,9 +16,7 @@ export function dropNotNull(change: DropNotNull, context: RuleContext): Entry {
   const note = (reason: string): Entry => ({ ...base, severity: "SAFE", reason });
 
   if (addedInRelease(change.table, change.column, context)) {
-    return note(
-      `Column ${name} is added in this release, so RG-DB-005 judges where it ends up (D33).`,
-    );
+    return note(`Column ${name} is added in this release, so RG-DB-005 judges where it ends up.`);
   }
   const column = context.used.tables.get(change.table)?.columns.get(change.column);
   if (column === undefined)
@@ -29,6 +27,6 @@ export function dropNotNull(change: DropNotNull, context: RuleContext): Entry {
     ...base,
     severity: "RISKY",
     reason: `Base's field for ${name} is required: if head writes NULL here, base reads it without any error, because Prisma returns null for a field its TypeScript type says is never null, and base breaks later wherever it uses the value.`,
-    fix: "Keep writing the column in this release, and stop writing it one release later (RULES §5).",
+    fix: "Keep writing the column in this release, and stop writing it one release later.",
   };
 }

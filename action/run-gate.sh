@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# The action's gate step: refuses a shallow clone (D60), runs the CLI, and records exit code, verdict and Markdown report as step outputs.
+# The action's gate step: refuses a shallow clone, runs the CLI, and records exit code, verdict and Markdown report as step outputs.
 set -euo pipefail
 
 out="$RUNNER_TEMP/rollback-gate"

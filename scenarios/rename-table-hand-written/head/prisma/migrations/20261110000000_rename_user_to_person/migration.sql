@@ -1,2 +1,2 @@
--- Hand-written: Prisma would DROP and CREATE the table instead (RULES §6 row 1).
+-- Hand-written: Prisma would DROP and CREATE the table instead.
 ALTER TABLE "User" RENAME TO "Person";

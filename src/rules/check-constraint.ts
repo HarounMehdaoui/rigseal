@@ -1,4 +1,4 @@
-// RG-DB-013 · New CHECK constraint (RULES §4): on a table base uses → RISKY.
+// RG-DB-013 · New CHECK constraint: on a table base uses → RISKY.
 import type { AddConstraint, Entry } from "../types.ts";
 import type { RuleContext } from "./context.ts";
 import { objectTarget } from "./target.ts";

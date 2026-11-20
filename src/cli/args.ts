@@ -1,9 +1,9 @@
-// Parses the command line into options, filling defaults (D6, D46) and rejecting bad input with a UsageError.
+// Parses the command line into options, filling defaults and rejecting bad input with a UsageError.
 import { parseArgs } from "node:util";
 import type { FailOn } from "../exit-code.ts";
 import { UsageError } from "./usage-error.ts";
 
-/** How base is chosen: a ref given outright, or the latest release tag on a branch (D5, D47). */
+/** How base is chosen: a ref given outright, or the latest release tag on a branch. */
 export type BaseOption =
   | { readonly kind: "explicit"; readonly ref: string }
   | { readonly kind: "tag"; readonly target: string; readonly pattern: string };
@@ -14,9 +14,9 @@ export interface CliOptions {
   readonly schema: string;
   readonly migrations: string;
   readonly failOn: FailOn;
-  /** Where to write the JSON report (D49), if anywhere. */
+  /** Where to write the JSON report, if anywhere. */
   readonly json?: string;
-  /** Where to write the Markdown report (D50), if anywhere. */
+  /** Where to write the Markdown report, if anywhere. */
   readonly markdown?: string;
 }
 
@@ -69,7 +69,7 @@ function baseOption(
   if (base === undefined) {
     return { kind: "tag", target: target ?? "main", pattern: pattern ?? "v*" };
   }
-  // Two ways of choosing base at once conflict; refuse instead of silently picking one (D47).
+  // Two ways of choosing base at once conflict; refuse instead of silently picking one.
   if (target !== undefined) throw new UsageError("--base can't be combined with --target");
   if (pattern !== undefined) throw new UsageError("--base can't be combined with --tag-pattern");
   return { kind: "explicit", ref: base };

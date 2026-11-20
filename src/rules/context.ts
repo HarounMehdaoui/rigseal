@@ -3,8 +3,8 @@ import type { UsedSet } from "../schema/types.ts";
 import type { Change } from "../types.ts";
 
 export interface RuleContext {
-  /** What base's client uses (RULES §2). */
+  /** What base's client uses. */
   readonly used: UsedSet;
-  /** Every change head's new migrations make, in order: RG-DB-005 judges a column's end state (D33). */
+  /** Every change head's new migrations make, in order: RG-DB-005 judges a column's end state. */
   readonly changes: readonly Change[];
 }

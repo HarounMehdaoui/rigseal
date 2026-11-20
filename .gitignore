@@ -1,15 +1,8 @@
-# Local assistant files: never committed
-CLAUDE.md
-CLAUDE.local.md
-.claude/
-
-# Markdown stays local: docs, plan and lab notes are never committed
+# Markdown is kept out of the repo, except the README
 *.md
+!/README.md
 
 # Dependencies and build output
 node_modules/
 dist/
 coverage/
-
-# The one Markdown file that is committed (D56)
-!/README.md

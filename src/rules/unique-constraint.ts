@@ -1,4 +1,4 @@
-// RG-DB-012 · New unique constraint or primary key (RULES §4): on a column base uses → RISKY.
+// RG-DB-012 · New unique constraint or primary key: on a column base uses → RISKY.
 import type { AddConstraint, CreateUniqueIndex, Entry } from "../types.ts";
 import type { RuleContext } from "./context.ts";
 import { objectTarget } from "./target.ts";

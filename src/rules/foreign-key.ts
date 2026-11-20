@@ -1,4 +1,4 @@
-// RG-DB-014 · New foreign key (RULES §4): on a table base uses → RISKY.
+// RG-DB-014 · New foreign key: on a table base uses → RISKY.
 import type { AddConstraint, Entry } from "../types.ts";
 import type { RuleContext } from "./context.ts";
 import { objectTarget } from "./target.ts";

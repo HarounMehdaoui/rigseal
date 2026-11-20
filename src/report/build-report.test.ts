@@ -16,7 +16,7 @@ function input(analysis: Partial<Analysis>, migrationsDir = "prisma/migrations")
 }
 
 describe("buildReport", () => {
-  it("states the schema version, tool, base and head (D24)", () => {
+  it("states the schema version, tool, base and head", () => {
     const report = buildReport(input({}));
     expect(report).toMatchObject({
       schemaVersion: 1,
@@ -30,7 +30,7 @@ describe("buildReport", () => {
     });
   });
 
-  it("flattens entries to repo-relative files; whole-migration entries get line 0 (D49)", () => {
+  it("flattens entries to repo-relative files; whole-migration entries get line 0", () => {
     const report = buildReport(
       input(
         {
@@ -99,7 +99,7 @@ describe("buildReport", () => {
     ]);
   });
 
-  it("warns about a fallback base, then about a base that uses no tables (D5, D37)", () => {
+  it("warns about a fallback base, then about a base that uses no tables", () => {
     const report = buildReport({
       ...input({ used: NO_TABLES }),
       base: { ref: "main", sha: "c".repeat(40), method: "fallback", warning: "No tag." },

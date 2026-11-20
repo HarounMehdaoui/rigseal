@@ -1,4 +1,4 @@
-// Turns one migration's parsed statements into typed changes, one per action (T3.2, T3.3).
+// Turns one migration's parsed statements into typed changes, one per action.
 import type { Change, StatementSource } from "../../types.ts";
 import type { Node, Statement } from "../parse.ts";
 import { alterEnum } from "./alter-enum.ts";
@@ -19,7 +19,7 @@ export function normalize(migration: string, statements: readonly Statement[]): 
 
 /**
  * One statement's changes. Empty only for a skip-listed statement; anything not modelled becomes
- * Unrecognized, so no statement is ever dropped silently (D28).
+ * Unrecognized, so no statement is ever dropped silently.
  */
 export function normalizeStatement(migration: string, { node, line }: Statement): Change[] {
   if (isSkipped(node)) return [];

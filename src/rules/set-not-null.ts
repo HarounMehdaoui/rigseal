@@ -1,4 +1,4 @@
-// RG-DB-009 · Set NOT NULL (RULES §4): on a column base leaves optional → RISKY; otherwise a SAFE note.
+// RG-DB-009 · Set NOT NULL: on a column base leaves optional → RISKY; otherwise a SAFE note.
 import type { Entry, SetNotNull } from "../types.ts";
 import { addedInRelease } from "./added-in-release.ts";
 import type { RuleContext } from "./context.ts";
@@ -16,9 +16,7 @@ export function setNotNull(change: SetNotNull, context: RuleContext): Entry {
   const note = (reason: string): Entry => ({ ...base, severity: "SAFE", reason });
 
   if (addedInRelease(change.table, change.column, context)) {
-    return note(
-      `Column ${name} is added in this release, so RG-DB-005 judges where it ends up (D33).`,
-    );
+    return note(`Column ${name} is added in this release, so RG-DB-005 judges where it ends up.`);
   }
   const column = context.used.tables.get(change.table)?.columns.get(change.column);
   if (column === undefined)

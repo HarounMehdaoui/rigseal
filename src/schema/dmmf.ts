@@ -8,7 +8,7 @@ export type Datamodel = Extract<ReturnType<typeof getDMMF>, { datamodel: unknown
 export type Field = Datamodel["models"][number]["fields"][number];
 
 /**
- * Pure: getDMMF runs in WebAssembly, with no I/O. It returns errors instead of throwing (T2.2),
+ * Pure: getDMMF runs in WebAssembly, with no I/O. It returns errors instead of throwing,
  * so they become a thrown SchemaError here. `@ignore`, `@@ignore` and `Unsupported(...)` are
  * already left out of what it returns.
  */

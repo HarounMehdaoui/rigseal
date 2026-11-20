@@ -15,13 +15,13 @@ describe("renderMarkdown", () => {
     );
   });
 
-  it("starts with the sticky-comment marker and puts warnings above the findings (D50)", async () => {
+  it("starts with the sticky-comment marker and puts warnings above the findings", async () => {
     const md = renderMarkdown(await emptyReport());
     expect(md.startsWith("<!-- rollback-gate -->\n## Rollback Gate: 🟢 SAFE\n")).toBe(true);
     expect(md.indexOf("> [!WARNING]")).toBeLessThan(md.indexOf("Base `main`"));
   });
 
-  it("shows UNSAFE, then RISKY, then folds SAFE notes into <details> (D29)", async () => {
+  it("shows UNSAFE, then RISKY, then folds SAFE notes into <details>", async () => {
     const md = renderMarkdown(await mixedReport());
     const unsafe = md.indexOf("### 🔴 UNSAFE");
     const risky = md.indexOf("### 🟡 RISKY");

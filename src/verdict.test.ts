@@ -12,7 +12,7 @@ function entry(severity: Severity): Entry {
   };
 }
 
-describe("verdictOf (D2: worst entry wins)", () => {
+describe("verdictOf (worst entry wins)", () => {
   it("is SAFE with no entries at all (a release with no SQL)", () => {
     expect(verdictOf([])).toBe("SAFE");
   });

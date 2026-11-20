@@ -28,7 +28,7 @@ function whole(migration: string, ruleId: string): Entry {
   };
 }
 
-// Already in D29 order: file (migration), line, rule ID, target, action.
+// Already in report order: file (migration), line, rule ID, target, action.
 const SORTED: Entry[] = [
   whole("20261101000000_init", "RG-DB-020"),
   at("20261101000000_init", 3, 0, "RG-DB-002", "User.a"),
@@ -54,7 +54,7 @@ function shuffled<T>(items: readonly T[], seed: number): T[] {
   return out;
 }
 
-describe("sortEntries (D24, D29)", () => {
+describe("sortEntries", () => {
   it.each([1, 2, 3, 42, 2026])("gives the same order from a shuffled input (seed %i)", (seed) => {
     expect(sortEntries(shuffled(SORTED, seed))).toEqual(SORTED);
   });

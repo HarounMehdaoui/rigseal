@@ -6,7 +6,7 @@ import { parseSql } from "./parse.ts";
 export async function migrationChanges(migration: string, sql: string): Promise<Change[]> {
   const parsed = await parseSql(sql);
   if (parsed.kind === "failure") {
-    // The whole file is unreadable, so it gives exactly one change (D21, D28).
+    // The whole file is unreadable, so it gives exactly one change.
     const { message, line } = parsed;
     return [{ kind: "Unparsable", message, line, source: { kind: "migration", migration } }];
   }

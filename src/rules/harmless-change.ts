@@ -1,4 +1,4 @@
-// RG-DB-000 (D40): the SAFE note for a recognized change no rule judges (RULES §4's no-rule table).
+// RG-DB-000: the SAFE note for a recognized change no rule judges.
 import type {
   CreateEnum,
   CreateIndex,

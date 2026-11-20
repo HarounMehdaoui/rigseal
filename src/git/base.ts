@@ -1,4 +1,4 @@
-// Picks "base": the release production runs, i.e. the code a rollback goes back to (D5, D35).
+// Picks "base": the release production runs, i.e. the code a rollback goes back to.
 import { runGit } from "./git.ts";
 import { resolveCommit } from "./resolve-commit.ts";
 
@@ -23,7 +23,7 @@ export async function resolveBase(
   const targetSha = await resolveCommit(repo, target);
 
   const tags = await runGit(repo, [
-    // Sort "v2.0.0-rc.1" below "v2.0.0"; git's default puts the prerelease above (D35).
+    // Sort "v2.0.0-rc.1" below "v2.0.0"; git's default puts the prerelease above.
     "-c",
     "versionsort.suffix=-",
     "tag",

@@ -1,4 +1,4 @@
-// Resolves a possibly schema-qualified name (table, index, enum) in the public schema; refuses any other (RULES §2).
+// Resolves a possibly schema-qualified name (table, index, enum) in the public schema; refuses any other.
 import type { Node, RangeVar } from "../parse.ts";
 
 export type NameRef =

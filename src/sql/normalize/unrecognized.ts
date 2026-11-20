@@ -1,4 +1,4 @@
-// Builds the Unrecognized change: the fail-closed answer for anything the normalizer doesn't model (D13).
+// Builds the Unrecognized change: the fail-closed answer for anything the normalizer doesn't model.
 import type { StatementSource, Unrecognized } from "../../types.ts";
 
 export function unrecognized(

@@ -21,7 +21,7 @@ function endOf(added: AddColumn, before: Change[], after: Change[]) {
   return columnEndState(added, contextFor("", [...before, added, ...after]));
 }
 
-describe("columnEndState (D33)", () => {
+describe("columnEndState", () => {
   it("is the column as added when nothing later touches it", () => {
     expect(endOf(add("phone", true, false), [], [])).toEqual({
       exists: true,

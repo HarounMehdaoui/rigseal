@@ -70,7 +70,7 @@ function expectToolFailure(result: Awaited<ReturnType<typeof gate>>, message: Re
   expect(result.stderr).toMatch(message);
 }
 
-describe("run: verdicts and exit codes (D14)", () => {
+describe("run: verdicts and exit codes", () => {
   it("exits 0 on SAFE and names base and head", async () => {
     await release();
     await head("index", 'CREATE INDEX "User_name_idx" ON "User"("name");\n');
@@ -100,7 +100,7 @@ describe("run: verdicts and exit codes (D14)", () => {
     expect((await gate("--fail-on", "risky")).code).toBe(1);
   });
 
-  it("exits 1, not 2, on unparsable SQL (D20, RG-DB-021)", async () => {
+  it("exits 1, not 2, on unparsable SQL (RG-DB-021)", async () => {
     await release();
     await head("typo", 'ALTR TABLE "User" DROP COLUMN "name";\n');
 
@@ -110,7 +110,7 @@ describe("run: verdicts and exit codes (D14)", () => {
     expect(result.stdout).toMatch(/UNSAFE +RG-DB-021/);
   });
 
-  it("falls back to the target with a warning when no tag exists (D5)", async () => {
+  it("falls back to the target with a warning when no tag exists", async () => {
     await repo.commit("release", RELEASE);
     const result = await gate();
     expect(result.code).toBe(0);
@@ -118,7 +118,7 @@ describe("run: verdicts and exit codes (D14)", () => {
     expect(result.stdout).toMatch(/^warning: No tag matching "v\*"/m);
   });
 
-  it("compares against an explicit --base (D47)", async () => {
+  it("compares against an explicit --base", async () => {
     await repo.commit("release", RELEASE);
     await head("drop", 'ALTER TABLE "User" DROP COLUMN "name";\n');
 
@@ -134,7 +134,7 @@ describe("run: verdicts and exit codes (D14)", () => {
   });
 });
 
-describe("run: report files (D16, D49, D50)", () => {
+describe("run: report files", () => {
   it("writes the JSON and Markdown reports where asked, and still prints the text", async () => {
     await release();
     await head("drop", 'ALTER TABLE "User" DROP COLUMN "name";\n');

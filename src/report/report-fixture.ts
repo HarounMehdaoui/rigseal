@@ -57,7 +57,7 @@ DROP TABLE "odd\`|<b>*_name";
   });
 }
 
-/** SAFE with no entries: no tag found (fallback) and a base schema with no models (D37). */
+/** SAFE with no entries: no tag found (fallback) and a base schema with no models. */
 export async function emptyReport(): Promise<Report> {
   const side = { schema: DATASOURCE, migrations: [] };
   return buildReport({

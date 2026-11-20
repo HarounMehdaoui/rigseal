@@ -1,4 +1,4 @@
-// RG-DB-018 · Rows updated (RULES §4): an UPDATE that sets a column base uses → RISKY; a backfill is SAFE.
+// RG-DB-018 · Rows updated: an UPDATE that sets a column base uses → RISKY; a backfill is SAFE.
 import type { Entry, UpdateRows } from "../types.ts";
 import type { RuleContext } from "./context.ts";
 import { tableTarget } from "./target.ts";

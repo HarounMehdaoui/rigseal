@@ -43,7 +43,7 @@ export function rename(stmt: RenameStmt, source: StatementSource): Change {
         source,
       }));
     case "OBJECT_TABCONSTRAINT": {
-      // Prisma renames a primary or foreign key this way (RULES §6 row 10); base never names them.
+      // Prisma renames a primary or foreign key this way; base never names them.
       const name = stmt.subname;
       if (name === undefined) return unrecognized(what, "the constraint could not be read", source);
       return named(fromRangeVar(stmt.relation), () => ({

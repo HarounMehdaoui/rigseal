@@ -1,4 +1,4 @@
-// One run of the gate, wired end to end: arguments → git → pure core → report files and stdout → exit code (D14).
+// One run of the gate, wired end to end: arguments → git → pure core → report files and stdout → exit code.
 import { analyze } from "../analyze.ts";
 import { exitCode } from "../exit-code.ts";
 import { GitError } from "../git/errors.ts";
@@ -26,8 +26,8 @@ export interface RunIo {
 }
 
 /**
- * Exit 2 means the tool itself failed and prints only one stderr line, never a verdict (D14).
- * Unparsable SQL is not a failure: the core turns it into an RG-DB-021 finding, so it exits 1 (D20).
+ * Exit 2 means the tool itself failed and prints only one stderr line, never a verdict.
+ * Unparsable SQL is not a failure: the core turns it into an RG-DB-021 finding, so it exits 1.
  */
 export async function run(argv: readonly string[], io: RunIo): Promise<0 | 1 | 2> {
   try {

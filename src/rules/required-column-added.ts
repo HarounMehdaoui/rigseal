@@ -1,4 +1,4 @@
-// RG-DB-005 · Required column added (RULES §4, D33): ends NOT NULL with no default on a used table → UNSAFE.
+// RG-DB-005 · Required column added: ends NOT NULL with no default on a used table → UNSAFE.
 import type { AddColumn, Entry } from "../types.ts";
 import { columnEndState } from "./column-end-state.ts";
 import type { RuleContext } from "./context.ts";
@@ -6,7 +6,7 @@ import { columnTarget } from "./target.ts";
 
 export const RULE_ID = "RG-DB-005";
 
-/** Judged by the column's end state after the whole release, not by the ADD alone (D33). */
+/** Judged by the column's end state after the whole release, not by the ADD alone. */
 export function requiredColumnAdded(change: AddColumn, context: RuleContext): Entry {
   const target = columnTarget(change.table, change.column);
   const name = `"${change.table}"."${change.column}"`;

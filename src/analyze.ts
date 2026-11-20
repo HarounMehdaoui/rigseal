@@ -1,4 +1,4 @@
-// The pure core: base and head snapshots → one entry per change in D29 order, plus the history and used set they came from.
+// The pure core: base and head snapshots → one entry per change in report order, plus the history and used set they came from.
 import { editedMigrations } from "./migrations/edited-migrations.ts";
 import { diffHistory, type HistoryEntry } from "./migrations/history.ts";
 import { sortEntries } from "./order.ts";
@@ -9,7 +9,7 @@ import { migrationChanges } from "./sql/migration-changes.ts";
 import { recognizeEnumRecreate } from "./sql/normalize/enum-recreate.ts";
 import type { Change, Entry, Snapshot } from "./types.ts";
 
-/** The entries, plus what the report states besides them: the history and base's used set (D24, D37). */
+/** The entries, plus what the report states besides them: the history and base's used set. */
 export interface Analysis {
   readonly entries: readonly Entry[];
   readonly history: readonly HistoryEntry[];

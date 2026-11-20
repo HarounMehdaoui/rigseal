@@ -32,7 +32,7 @@ function judge(column: string, to: PgType, using = false) {
   return alterColumnType(change, contextFor(BASE, [change]));
 }
 
-describe("type changes (RG-DB-006/007/008, D44)", () => {
+describe("type changes (RG-DB-006/007/008)", () => {
   it("narrowing (varchar(50) → varchar(10)) is RG-DB-006 RISKY", () => {
     const entry = judge("code", type("varchar", "10"));
     expect(entry).toMatchObject({ ruleId: "RG-DB-006", severity: "RISKY", target: "User.code" });

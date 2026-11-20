@@ -56,7 +56,7 @@ describe("resolveBase", () => {
     });
   });
 
-  describe("which tag is latest (D35)", () => {
+  describe("which tag is latest", () => {
     it("prefers the highest version over a hotfix tag merged back later", async () => {
       await repo.commit("release 1.0.0");
       await repo.git("tag", "v1.0.0");

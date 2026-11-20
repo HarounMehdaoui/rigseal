@@ -1,4 +1,4 @@
-// End to end (T6.3b): the north-star rename as four PRs and tagged releases; base found automatically → SAFE, RISKY, SAFE, SAFE.
+// End to end: the north-star rename as four PRs and tagged releases; base found automatically → SAFE, RISKY, SAFE, SAFE.
 import { readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { makeRepo, type TestRepo } from "../src/git/test-repo.ts";
@@ -7,7 +7,7 @@ import { treeFiles } from "../src/tree-files.ts";
 import { runCli } from "./run-cli.ts";
 
 const STEPS = ["rename-r1-expand", "rename-r2-switch", "rename-r3-retire", "rename-r4-contract"];
-// v1.10.0 sorts before v1.9.0 as text: the last step only finds its base by version order (D35).
+// v1.10.0 sorts before v1.9.0 as text: the last step only finds its base by version order.
 const TAGS = ["v1.8.0", "v1.9.0", "v1.10.0", "v1.11.0"];
 
 const scenario = (name: string) => new URL(`../scenarios/${name}/`, import.meta.url);
@@ -40,7 +40,7 @@ describe("the four-release rename through git", () => {
       await repo.git("rm", "-r", "--quiet", "prisma");
       await repo.commit(name, treeFiles(new URL("head/", scenario(name))));
 
-      // No --base and no --target: base is the newest release tag reachable from main (D5, D46).
+      // No --base and no --target: base is the newest release tag reachable from main.
       const { code, report } = await runCli(repo.dir, ["--head", `pr-${i + 1}`]);
       expect(report.base, name).toMatchObject({ ref: previous, method: "tag" });
       expect(code, name).toBe(report.verdict === "UNSAFE" ? 1 : 0);

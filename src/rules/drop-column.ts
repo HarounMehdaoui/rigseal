@@ -1,4 +1,4 @@
-// RG-DB-002 · Drop column (RULES §4): dropping a column base uses → UNSAFE; otherwise a SAFE note.
+// RG-DB-002 · Drop column: dropping a column base uses → UNSAFE; otherwise a SAFE note.
 import type { DropColumn, Entry } from "../types.ts";
 import type { RuleContext } from "./context.ts";
 import { columnTarget } from "./target.ts";

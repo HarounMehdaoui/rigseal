@@ -1,4 +1,4 @@
-// Core types shared by the pipeline (docs/ARCHITECTURE.md "Core types").
+// Core types shared by the pipeline.
 
 export type Severity = "SAFE" | "RISKY" | "UNSAFE";
 
@@ -8,7 +8,7 @@ export interface MigrationFolder {
   readonly sql: string;
 }
 
-/** One side (base or head) as the pure core sees it: no git, no files (D4). */
+/** One side (base or head) as the pure core sees it: no git, no files. */
 export interface Snapshot {
   /** The text of `schema.prisma`. */
   readonly schema: string;
@@ -51,7 +51,7 @@ export interface EditedMigration {
   readonly source: MigrationSource;
 }
 
-/** A migration Postgres's parser rejects as a whole (RG-DB-021, D20). */
+/** A migration Postgres's parser rejects as a whole (RG-DB-021). */
 export interface Unparsable {
   readonly kind: "Unparsable";
   /** The parser's own message, quoted in the finding. */
@@ -69,7 +69,7 @@ export interface PgType {
 }
 
 interface TableChange {
-  /** Table name in the public schema (RULES §2: other schemas become Unrecognized). */
+  /** Table name in the public schema (other schemas become Unrecognized). */
   readonly table: string;
   readonly source: StatementSource;
 }
@@ -219,7 +219,7 @@ export interface DeleteRows extends TableChange {
   readonly via: "delete" | "truncate";
 }
 
-/** A statement (or one action of it) that parsed but that no normalizer models (RG-DB-022, D13). */
+/** A statement (or one action of it) that parsed but that no normalizer models (RG-DB-022). */
 export interface Unrecognized {
   readonly kind: "Unrecognized";
   /** What it is, e.g. `CreateFunctionStmt` or `AlterTableStmt/AT_AddConstraint`. */

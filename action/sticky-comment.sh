@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Keeps one Rollback Gate comment on the PR: finds the bot's comment by its hidden marker and edits it, or creates one (D17, D58).
+# Keeps one Rollback Gate comment on the PR: finds the bot's comment by its hidden marker and edits it, or creates one.
 set -euo pipefail
 
 # GitHub refuses comments over 65,536 characters; stay well under and point to the job summary.

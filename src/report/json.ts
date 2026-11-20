@@ -1,4 +1,4 @@
-// Renders the Report as JSON in D49's fixed key order, 2-space indent and one trailing newline (D24).
+// Renders the Report as JSON in a fixed key order, 2-space indent and one trailing newline.
 import type { Report, ReportEntry } from "./types.ts";
 
 /**

@@ -1,4 +1,4 @@
-// RG-DB-001 · Drop table (RULES §4): dropping a table base uses → UNSAFE; otherwise a SAFE note.
+// RG-DB-001 · Drop table: dropping a table base uses → UNSAFE; otherwise a SAFE note.
 import type { DropTable, Entry } from "../types.ts";
 import type { RuleContext } from "./context.ts";
 import { tableTarget } from "./target.ts";

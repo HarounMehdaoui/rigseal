@@ -12,7 +12,7 @@ describe("renderJson", () => {
     await expect(renderJson(await emptyReport())).toMatchFileSnapshot("golden/empty.json.golden");
   });
 
-  it("writes keys in D49's order whatever order the report object has them in", async () => {
+  it("writes keys in the fixed order whatever order the report object has them in", async () => {
     const report = await mixedReport();
     const [entry] = report.entries;
     if (entry === undefined) throw new Error("fixture has entries");
@@ -35,7 +35,7 @@ describe("renderJson", () => {
     expect(renderJson(shuffled)).toBe(renderJson(ordered));
   });
 
-  it("uses 2-space indentation and ends with exactly one newline (D24)", async () => {
+  it("uses 2-space indentation and ends with exactly one newline", async () => {
     const json = renderJson(await emptyReport());
     expect(json.startsWith('{\n  "schemaVersion": 1,\n')).toBe(true);
     expect(json.endsWith("}\n")).toBe(true);

@@ -1,11 +1,11 @@
-// Builds the used set from base's schema.prisma (RULES §2, D8): which tables, columns and enums base's
+// Builds the used set from base's schema.prisma: which tables, columns and enums base's
 // client uses. Rules check head's migrations against this set only; head's schema is never consulted.
 import { readDatamodel } from "./dmmf.ts";
 import { columnDefault, nativeType } from "./prisma-defaults.ts";
 import { unexpected } from "./schema-error.ts";
 import type { UsedColumn, UsedEnum, UsedSet, UsedTable } from "./types.ts";
 
-/** A schema with no models gives an empty set; the report warns about it (D37). */
+/** A schema with no models gives an empty set; the report warns about it. */
 export function buildUsedSet(schemaText: string): UsedSet {
   const datamodel = readDatamodel(schemaText);
   const enumNames = new Map(datamodel.enums.map((e) => [e.name, e.dbName ?? e.name]));
@@ -13,7 +13,7 @@ export function buildUsedSet(schemaText: string): UsedSet {
   const tables = new Map<string, UsedTable>();
 
   for (const model of datamodel.models) {
-    // v0.1 is public-only (RULES §2): statements on other schemas are RG-DB-022 anyway.
+    // v0.1 is public-only: statements on other schemas are RG-DB-022 anyway.
     if ((model.schema ?? "public") !== "public") continue;
 
     const columns = new Map<string, UsedColumn>();

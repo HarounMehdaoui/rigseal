@@ -10,7 +10,7 @@ function t(spec: string): PgType {
   return { name, args: args === undefined ? [] : args.split(","), array: array !== undefined };
 }
 
-// Every row of RULES §4's widening list (plus int2 → int8, the chain's two steps at once).
+// Every row of the widening list (plus int2 → int8, the chain's two steps at once).
 const WIDENINGS: [string, string][] = [
   ["varchar(50)", "varchar(255)"],
   ["varchar(50)", "text"],

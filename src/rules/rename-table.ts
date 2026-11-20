@@ -1,4 +1,4 @@
-// RG-DB-003 · Rename table (RULES §4): renaming a table base uses → UNSAFE; otherwise a SAFE note.
+// RG-DB-003 · Rename table: renaming a table base uses → UNSAFE; otherwise a SAFE note.
 import type { Entry, RenameTable } from "../types.ts";
 import type { RuleContext } from "./context.ts";
 import { tableTarget } from "./target.ts";
