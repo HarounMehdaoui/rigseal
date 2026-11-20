@@ -23,7 +23,9 @@ field (`P2022`). Prisma itself gives no warning: after the rollback, `prisma mig
 
 ## What the PR comment looks like
 
-<!-- Screenshot from the demo repo goes here (T7.2). -->
+See it live in the demo repo: [PR #1](https://github.com/HarounMehdaoui/rollback-gate-demo/pull/1)
+breaks rollback to `v1` (red check, UNSAFE), and [PR #2](https://github.com/HarounMehdaoui/rollback-gate-demo/pull/2)
+ships the same feature the safe way (green check, SAFE). An excerpt of PR #1's comment:
 
 ```text
 ## Rollback Gate: 🔴 UNSAFE
