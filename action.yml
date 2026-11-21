@@ -1,6 +1,9 @@
 # Rigseal as a composite GitHub Action: runs the gate, writes the job summary, keeps one sticky PR comment, signs the report on push, sets the check.
 name: Rigseal
 description: Can the last release's code still run on the database this pull request's Prisma migrations leave?
+branding:
+  icon: shield
+  color: blue
 
 inputs:
   target:
