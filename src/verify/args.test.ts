@@ -8,7 +8,7 @@ const SIGNER = [
   "--repository",
   "acme/shop",
   "--workflow",
-  ".github/workflows/rollback-gate.yml",
+  ".github/workflows/rigseal.yml",
   "--ref",
   "refs/heads/main",
   "--sha",
@@ -16,7 +16,7 @@ const SIGNER = [
 ];
 const ALL = [...FILES, ...SIGNER];
 const EXPECTED_SIGNER = {
-  identity: "https://github.com/acme/shop/.github/workflows/rollback-gate.yml@refs/heads/main",
+  identity: "https://github.com/acme/shop/.github/workflows/rigseal.yml@refs/heads/main",
   repository: "acme/shop",
   ref: "refs/heads/main",
 };
@@ -27,7 +27,7 @@ describe("parseVerifyArgs", () => {
       kind: "run",
       options: {
         source: { kind: "files", report: "r.json", bundle: "r.sigstore.json" },
-        workflow: ".github/workflows/rollback-gate.yml",
+        workflow: ".github/workflows/rigseal.yml",
         signer: EXPECTED_SIGNER,
         sha: SHA,
         failOn: "unsafe",
@@ -39,8 +39,8 @@ describe("parseVerifyArgs", () => {
     expect(parseVerifyArgs(["--from-github", ...SIGNER])).toEqual({
       kind: "run",
       options: {
-        source: { kind: "github", artifact: "rollback-gate-report" },
-        workflow: ".github/workflows/rollback-gate.yml",
+        source: { kind: "github", artifacts: ["rigseal-report", "rollback-gate-report"] },
+        workflow: ".github/workflows/rigseal.yml",
         signer: EXPECTED_SIGNER,
         sha: SHA,
         failOn: "unsafe",
@@ -49,7 +49,7 @@ describe("parseVerifyArgs", () => {
     const named = parseVerifyArgs(["--from-github", "--artifact", "gate", ...SIGNER]);
     expect(named.kind === "run" && named.options.source).toEqual({
       kind: "github",
-      artifact: "gate",
+      artifacts: ["gate"],
     });
   });
 

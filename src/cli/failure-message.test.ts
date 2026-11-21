@@ -8,7 +8,7 @@ import { UsageError } from "./usage-error.ts";
 describe("failureMessage", () => {
   it("points a usage error at --help", () => {
     expect(failureMessage(new UsageError("unknown option --nope"))).toBe(
-      "rollback-gate: unknown option --nope (see --help)",
+      "rigseal: unknown option --nope (see --help)",
     );
   });
 
@@ -16,27 +16,25 @@ describe("failureMessage", () => {
     const err = new SchemaError(
       "base schema.prisma is invalid: error: bad line\n  -->  x:1\n 1 | y",
     );
-    expect(failureMessage(err)).toBe(
-      "rollback-gate: base schema.prisma is invalid: error: bad line",
-    );
+    expect(failureMessage(err)).toBe("rigseal: base schema.prisma is invalid: error: bad line");
   });
 
   it("reports git errors as they are", () => {
     expect(failureMessage(new GitError("REF_NOT_FOUND", '"nope" is not a branch'))).toBe(
-      'rollback-gate: "nope" is not a branch',
+      'rigseal: "nope" is not a branch',
     );
   });
 
   it("reports a report file that can't be written as it is", () => {
     expect(failureMessage(new OutputError("can't write the JSON report to x: EACCES"))).toBe(
-      "rollback-gate: can't write the JSON report to x: EACCES",
+      "rigseal: can't write the JSON report to x: EACCES",
     );
   });
 
   it("labels anything else an internal error", () => {
     expect(failureMessage(new TypeError("x is undefined"))).toBe(
-      "rollback-gate: internal error: x is undefined",
+      "rigseal: internal error: x is undefined",
     );
-    expect(failureMessage("thrown string")).toBe("rollback-gate: internal error: thrown string");
+    expect(failureMessage("thrown string")).toBe("rigseal: internal error: thrown string");
   });
 });

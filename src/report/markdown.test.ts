@@ -17,7 +17,7 @@ describe("renderMarkdown", () => {
 
   it("starts with the sticky-comment marker and puts warnings above the findings", async () => {
     const md = renderMarkdown(await emptyReport());
-    expect(md.startsWith("<!-- rollback-gate -->\n## Rollback Gate: 🟢 SAFE\n")).toBe(true);
+    expect(md.startsWith("<!-- rigseal -->\n## Rigseal: 🟢 SAFE\n")).toBe(true);
     expect(md.indexOf("> [!WARNING]")).toBeLessThan(md.indexOf("Base `main`"));
   });
 

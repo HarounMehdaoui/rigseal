@@ -1,5 +1,5 @@
-<!-- rollback-gate -->
-## Rollback Gate: 🔴 UNSAFE
+<!-- rigseal -->
+## Rigseal: 🔴 UNSAFE
 
 Base `v1.0.0` (`1111111`, tag) → head `HEAD` (`2222222`)
 
@@ -15,7 +15,7 @@ Base uses column "User"."name": by default base's Prisma client selects every sc
 ### 🔴 UNSAFE · RG-DB-021 · `20261111000000_typo`
 `prisma/migrations/20261111000000_typo/migration.sql`
 
-Postgres's parser rejects this migration at line 1: "syntax error at or near "ALTR"". Rollback Gate can't tell what it does to base.
+Postgres's parser rejects this migration at line 1: "syntax error at or near "ALTR"". Rigseal can't tell what it does to base.
 
 **Fix:** Fix the SQL so Postgres's own parser accepts it.
 

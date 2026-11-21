@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// The `rollback-gate` executable: runs the gate (or `verify` before a deploy) in the current directory and sets the exit code.
+// The `rigseal` executable: runs the gate (or `verify` before a deploy) in the current directory and sets the exit code.
 import { writeFile } from "node:fs/promises";
 import { run } from "./cli/run.ts";
 import { runVerify } from "./verify/run-verify.ts";

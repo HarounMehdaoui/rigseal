@@ -1,4 +1,4 @@
-// Parses `rollback-gate verify` arguments: exactly one source, every check's input required, bad input a UsageError.
+// Parses `rigseal verify` arguments: exactly one source, every check's input required, bad input a UsageError.
 import { parseArgs } from "node:util";
 import { UsageError } from "../cli/usage-error.ts";
 import type { FailOn } from "../exit-code.ts";
@@ -7,7 +7,8 @@ import { type Signer, signerOf } from "./signer.ts";
 /** Where the report and bundle come from: local files, or the gate run's artifact on GitHub. */
 export type ReportSource =
   | { readonly kind: "files"; readonly report: string; readonly bundle: string }
-  | { readonly kind: "github"; readonly artifact: string };
+  /** Artifact names to try, in order: the first one the run has is used. */
+  | { readonly kind: "github"; readonly artifacts: readonly string[] };
 
 export interface VerifyOptions {
   readonly source: ReportSource;
@@ -22,8 +23,8 @@ export type ParsedVerifyArgs =
   | { readonly kind: "help" }
   | { readonly kind: "run"; readonly options: VerifyOptions };
 
-/** The artifact name the action uploads by default. */
-const DEFAULT_ARTIFACT = "rollback-gate-report";
+/** The action's default artifact name, then its name before v0.4.0, for runs signed by older versions. */
+const DEFAULT_ARTIFACTS = ["rigseal-report", "rollback-gate-report"];
 const REQUIRED = ["repository", "workflow", "ref", "sha"] as const;
 const FULL_SHA = /^[0-9a-f]{40}$/;
 const ONE_SOURCE = "give either --report and --bundle, or --from-github";
@@ -74,7 +75,7 @@ function sourceOf(
 ): ReportSource {
   if (fromGithub) {
     if (report !== undefined || bundle !== undefined) throw new UsageError(ONE_SOURCE);
-    return { kind: "github", artifact: artifact ?? DEFAULT_ARTIFACT };
+    return { kind: "github", artifacts: artifact === undefined ? DEFAULT_ARTIFACTS : [artifact] };
   }
   if (artifact !== undefined) throw new UsageError("--artifact only goes with --from-github");
   if (report === undefined || bundle === undefined) throw new UsageError(ONE_SOURCE);

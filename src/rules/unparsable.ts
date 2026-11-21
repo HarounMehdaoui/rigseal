@@ -10,7 +10,7 @@ export function unparsable(change: Unparsable): Entry {
     ruleId: RULE_ID,
     severity: "UNSAFE",
     target: change.source.migration,
-    reason: `Postgres's parser rejects this migration${where}: "${change.message}". Rollback Gate can't tell what it does to base.`,
+    reason: `Postgres's parser rejects this migration${where}: "${change.message}". Rigseal can't tell what it does to base.`,
     fix: "Fix the SQL so Postgres's own parser accepts it.",
     source: change.source,
   };

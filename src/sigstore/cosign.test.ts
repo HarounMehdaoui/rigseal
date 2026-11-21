@@ -7,7 +7,7 @@ const REQUEST = {
   blob: "/tmp/report.json",
   bundle: "/tmp/report.sigstore.json",
   signer: {
-    identity: "https://github.com/acme/shop/.github/workflows/rollback-gate.yml@refs/heads/main",
+    identity: "https://github.com/acme/shop/.github/workflows/rigseal.yml@refs/heads/main",
     repository: "acme/shop",
     ref: "refs/heads/main",
   },
@@ -30,7 +30,7 @@ describe("cosignVerifyBlob", () => {
       "--bundle",
       "/tmp/report.sigstore.json",
       "--certificate-identity",
-      "https://github.com/acme/shop/.github/workflows/rollback-gate.yml@refs/heads/main",
+      "https://github.com/acme/shop/.github/workflows/rigseal.yml@refs/heads/main",
       "--certificate-oidc-issuer",
       "https://token.actions.githubusercontent.com",
       "--certificate-github-workflow-repository",

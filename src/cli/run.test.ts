@@ -66,7 +66,7 @@ async function gate(...argv: string[]) {
 function expectToolFailure(result: Awaited<ReturnType<typeof gate>>, message: RegExp): void {
   expect(result.code).toBe(2);
   expect(result.stdout).toBe("");
-  expect(result.stderr).toMatch(/^rollback-gate: [^\n]+\n$/);
+  expect(result.stderr).toMatch(/^rigseal: [^\n]+\n$/);
   expect(result.stderr).toMatch(message);
 }
 
@@ -78,7 +78,7 @@ describe("run: verdicts and exit codes", () => {
     const result = await gate();
     expect(result.code).toBe(0);
     expect(result.stderr).toBe("");
-    expect(result.stdout).toMatch(/^Rollback Gate: SAFE$/m);
+    expect(result.stdout).toMatch(/^Rigseal: SAFE$/m);
     expect(result.stdout).toMatch(/base: v1 \([0-9a-f]{7}, tag\)/);
   });
 
@@ -88,7 +88,7 @@ describe("run: verdicts and exit codes", () => {
 
     const result = await gate();
     expect(result.code).toBe(1);
-    expect(result.stdout).toMatch(/^Rollback Gate: UNSAFE$/m);
+    expect(result.stdout).toMatch(/^Rigseal: UNSAFE$/m);
     expect(result.stdout).toMatch(/UNSAFE +RG-DB-002 +User\.name/);
   });
 
@@ -130,7 +130,7 @@ describe("run: verdicts and exit codes", () => {
   it("prints usage on --help and exits 0", async () => {
     const result = await gate("--help");
     expect(result.code).toBe(0);
-    expect(result.stdout).toMatch(/^Usage: rollback-gate/);
+    expect(result.stdout).toMatch(/^Usage: rigseal/);
   });
 });
 
@@ -155,10 +155,8 @@ describe("run: report files", () => {
         },
       ],
     });
-    expect(result.files.get("out/r.md")).toMatch(
-      /^<!-- rollback-gate -->\n## Rollback Gate: 🔴 UNSAFE/,
-    );
-    expect(result.stdout).toMatch(/^Rollback Gate: UNSAFE$/m);
+    expect(result.files.get("out/r.md")).toMatch(/^<!-- rigseal -->\n## Rigseal: 🔴 UNSAFE/);
+    expect(result.stdout).toMatch(/^Rigseal: UNSAFE$/m);
   });
 
   it("writes nothing when the tool fails", async () => {

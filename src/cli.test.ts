@@ -37,13 +37,13 @@ describe("cli entry point", () => {
   it("sets the process exit code to 2 on a bad ref, with one stderr line", async () => {
     const result = await cli(["--base", "nope"]);
     expect(result.code).toBe(2);
-    expect(result.stderr).toMatch(/^rollback-gate: "nope" is not a branch, tag or commit[^\n]*\n$/);
+    expect(result.stderr).toMatch(/^rigseal: "nope" is not a branch, tag or commit[^\n]*\n$/);
   });
 
   it("exits 2 when git can't be found", async () => {
     const result = await cli([], { ...process.env, PATH: "" });
     expect(result.code).toBe(2);
-    expect(result.stderr).toMatch(/^rollback-gate: could not run git[^\n]*\n$/);
+    expect(result.stderr).toMatch(/^rigseal: could not run git[^\n]*\n$/);
   });
 });
 
@@ -51,15 +51,13 @@ describe("cli verify subcommand", () => {
   it("routes `verify` to the verifier", async () => {
     const help = await cli(["verify", "--help"]);
     expect(help.code).toBe(0);
-    expect(help.stdout).toMatch(/^Usage: rollback-gate verify/);
+    expect(help.stdout).toMatch(/^Usage: rigseal verify/);
   });
 
   it("exits 2 when the report has no bundle", async () => {
     const result = await cli(["verify", "--report", "r.json"]);
     expect(result.code).toBe(2);
-    expect(result.stderr).toMatch(
-      /^rollback-gate: give either --report and --bundle, or --from-github/,
-    );
+    expect(result.stderr).toMatch(/^rigseal: give either --report and --bundle, or --from-github/);
   });
 });
 

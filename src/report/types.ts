@@ -27,7 +27,7 @@ export interface ReportMigration {
 
 export interface Report {
   readonly schemaVersion: 1;
-  readonly tool: { readonly name: "rollback-gate"; readonly version: string };
+  readonly tool: { readonly name: "rigseal"; readonly version: string };
   readonly verdict: Severity;
   readonly base: { readonly ref: string; readonly sha: string; readonly method: BaseMethod };
   readonly head: { readonly ref: string; readonly sha: string };

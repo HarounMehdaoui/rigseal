@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "tool": {
-    "name": "rollback-gate",
+    "name": "rigseal",
     "version": "0.0.0"
   },
   "verdict": "UNSAFE",
@@ -93,7 +93,7 @@
       "file": "prisma/migrations/20261111000000_typo/migration.sql",
       "line": 0,
       "action": 0,
-      "reason": "Postgres's parser rejects this migration at line 1: \"syntax error at or near \"ALTR\"\". Rollback Gate can't tell what it does to base.",
+      "reason": "Postgres's parser rejects this migration at line 1: \"syntax error at or near \"ALTR\"\". Rigseal can't tell what it does to base.",
       "fix": "Fix the SQL so Postgres's own parser accepts it."
     }
   ]

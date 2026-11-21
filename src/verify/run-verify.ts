@@ -1,4 +1,4 @@
-// One run of `rollback-gate verify`: arguments → get both files (local or the gate run's artifact) → cosign → check the report → exit code.
+// One run of `rigseal verify`: arguments → get both files (local or the gate run's artifact) → cosign → check the report → exit code.
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -55,12 +55,12 @@ export async function runVerify(argv: readonly string[], io: VerifyIo): Promise<
     const verdict = checkReport(evidence.report.toString("utf8"), options.sha, options.failOn);
     const run = evidence.runId === null ? "" : ` (run ${evidence.runId})`;
     io.stdout(
-      `rollback-gate verify: OK: ${verdict} report for ${options.sha}${run}, signed by ${options.signer.identity}\n`,
+      `rigseal verify: OK: ${verdict} report for ${options.sha}${run}, signed by ${options.signer.identity}\n`,
     );
     return 0;
   } catch (err) {
     if (err instanceof Refusal) {
-      io.stderr(`rollback-gate verify: refused: ${err.message}\n`);
+      io.stderr(`rigseal verify: refused: ${err.message}\n`);
       return 1;
     }
     io.stderr(`${failureMessage(err)}\n`);
@@ -93,10 +93,20 @@ async function gather(options: VerifyOptions, io: VerifyIo, work: string): Promi
   const dir = join(work, "artifact");
   // Created here rather than relying on gh to create it.
   await mkdir(dir);
-  const name = options.source.artifact;
-  const download = await downloadArtifact(io.gh, { repository, runId: run.id, name, dir });
-  if (!download.ok) {
-    throw new Refusal(`can't download artifact "${name}" of run ${run.id}: ${download.message}`);
+  // The first name the run has wins; a name the run doesn't have is just the next one to try.
+  let last = "";
+  let found = false;
+  for (const name of options.source.artifacts) {
+    const download = await downloadArtifact(io.gh, { repository, runId: run.id, name, dir });
+    if (download.ok) {
+      found = true;
+      break;
+    }
+    last = download.message;
+  }
+  if (!found) {
+    const names = options.source.artifacts.map((n) => `"${n}"`).join(" or ");
+    throw new Refusal(`can't download artifact ${names} of run ${run.id}: ${last}`);
   }
   // Whatever was downloaded is untrusted: it only counts if the signature verifies below.
   const bundlePath = join(dir, "report.sigstore.json");

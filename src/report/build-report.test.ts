@@ -20,7 +20,7 @@ describe("buildReport", () => {
     const report = buildReport(input({}));
     expect(report).toMatchObject({
       schemaVersion: 1,
-      tool: { name: "rollback-gate", version: "1.2.3" },
+      tool: { name: "rigseal", version: "1.2.3" },
       verdict: "SAFE",
       base: { ref: "v1", sha: "a".repeat(40), method: "tag" },
       head: { ref: "HEAD", sha: "b".repeat(40) },

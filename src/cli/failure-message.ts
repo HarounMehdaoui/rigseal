@@ -14,13 +14,13 @@ import { UsageError } from "./usage-error.ts";
 export function failureMessage(err: unknown): string {
   const text = err instanceof Error ? err.message : String(err);
   const line = text.split("\n", 1)[0]?.trim() ?? "";
-  if (err instanceof UsageError) return `rollback-gate: ${line} (see --help)`;
+  if (err instanceof UsageError) return `rigseal: ${line} (see --help)`;
   const known =
     err instanceof GitError ||
     err instanceof SchemaError ||
     err instanceof OutputError ||
     err instanceof CosignError ||
     err instanceof GhError;
-  if (known) return `rollback-gate: ${line}`;
-  return `rollback-gate: internal error: ${line}`;
+  if (known) return `rigseal: ${line}`;
+  return `rigseal: internal error: ${line}`;
 }

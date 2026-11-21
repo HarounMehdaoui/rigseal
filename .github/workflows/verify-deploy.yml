@@ -1,10 +1,10 @@
-# Plays a deploy pipeline in another workflow: once Rollback Gate has run on main, verify that commit's signed report knowing only its SHA.
+# Plays a deploy pipeline in another workflow: once Rigseal has run on main, verify that commit's signed report knowing only its SHA.
 # workflow_run runs with this repository's own workflow code from main, never a pull request's, and checks out no PR code.
 name: Verify before deploy
 
 on:
   workflow_run:
-    workflows: [Rollback Gate]
+    workflows: [Rigseal]
     types: [completed]
 
 permissions:
@@ -29,7 +29,7 @@ jobs:
       - name: Verify the deploy commit
         uses: ./verify
         with:
-          workflow: .github/workflows/rollback-gate.yml
+          workflow: .github/workflows/rigseal.yml
           ref: refs/heads/main
           sha: ${{ github.event.workflow_run.head_sha }}
 
@@ -38,7 +38,7 @@ jobs:
         continue-on-error: true
         uses: ./verify
         with:
-          workflow: .github/workflows/rollback-gate.yml
+          workflow: .github/workflows/rigseal.yml
           ref: refs/heads/main
           sha: "0000000000000000000000000000000000000000"
       - name: It must have been refused

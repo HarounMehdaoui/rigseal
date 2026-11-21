@@ -5,12 +5,12 @@ set -euo pipefail
 bundle=""
 if [[ "$EVENT" != "push" ]]; then
   # Pull request code is untrusted, and fork pull requests get no OIDC token anyway.
-  echo "::notice title=Rollback Gate::Not signing on '$EVENT' events: only reports for pushed code are signed."
+  echo "::notice title=Rigseal::Not signing on '$EVENT' events: only reports for pushed code are signed."
 elif [[ -z "$REPORT_JSON" || ! -f "$REPORT_JSON" ]]; then
-  echo "::notice title=Rollback Gate::No report to sign: the gate itself failed."
+  echo "::notice title=Rigseal::No report to sign: the gate itself failed."
 elif [[ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]]; then
   # Asked to sign but can't: fail loudly, a deploy may depend on this signature.
-  echo "::error title=Rollback Gate::Signing needs an OIDC token: add 'id-token: write' to the job's permissions."
+  echo "::error title=Rigseal::Signing needs an OIDC token: add 'id-token: write' to the job's permissions."
   exit 1
 else
   bundle="${REPORT_JSON%.json}.sigstore.json"

@@ -37,7 +37,7 @@ export function alterColumnType(change: AlterColumnType, { used }: RuleContext):
     return entry(
       UNKNOWN,
       "UNSAFE",
-      `Rollback Gate can't prove that base can still read and write ${name}: ${base} isn't on the widening list.`,
+      `Rigseal can't prove that base can still read and write ${name}: ${base} isn't on the widening list.`,
       UNKNOWN_FIX,
     );
   }
@@ -45,7 +45,7 @@ export function alterColumnType(change: AlterColumnType, { used }: RuleContext):
     return entry(
       UNKNOWN,
       "UNSAFE",
-      `Rollback Gate can't prove that base can still read and write ${name}: the change to ${to} rewrites every value with a USING cast.`,
+      `Rigseal can't prove that base can still read and write ${name}: the change to ${to} rewrites every value with a USING cast.`,
       UNKNOWN_FIX,
     );
   }
@@ -83,7 +83,7 @@ export function alterColumnType(change: AlterColumnType, { used }: RuleContext):
       return entry(
         UNKNOWN,
         "UNSAFE",
-        `Rollback Gate can't prove that base can still read and write ${name}: ${from} → ${to} isn't on the widening list.`,
+        `Rigseal can't prove that base can still read and write ${name}: ${from} → ${to} isn't on the widening list.`,
         UNKNOWN_FIX,
       );
   }

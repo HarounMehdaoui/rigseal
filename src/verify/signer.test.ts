@@ -4,14 +4,14 @@ import { GITHUB_OIDC_ISSUER, signerOf } from "./signer.ts";
 
 const OK = {
   repository: "acme/shop",
-  workflow: ".github/workflows/rollback-gate.yml",
+  workflow: ".github/workflows/rigseal.yml",
   ref: "refs/heads/main",
 };
 
 describe("signerOf", () => {
   it("builds the exact certificate identity from its parts", () => {
     expect(signerOf(OK)).toEqual({
-      identity: "https://github.com/acme/shop/.github/workflows/rollback-gate.yml@refs/heads/main",
+      identity: "https://github.com/acme/shop/.github/workflows/rigseal.yml@refs/heads/main",
       repository: "acme/shop",
       ref: "refs/heads/main",
     });
@@ -38,7 +38,7 @@ describe("signerOf", () => {
     [{ repository: "acme/shop/extra" }, /--repository/],
     [{ repository: "acme/.*" }, /--repository/],
     [{ repository: "https://github.com/acme/shop" }, /--repository/],
-    [{ workflow: "rollback-gate.yml" }, /--workflow/],
+    [{ workflow: "rigseal.yml" }, /--workflow/],
     [{ workflow: ".github/workflows/sub/x.yml" }, /--workflow/],
     [{ workflow: ".github/workflows/x.json" }, /--workflow/],
     [{ workflow: ".github/workflows/.*" }, /--workflow/],

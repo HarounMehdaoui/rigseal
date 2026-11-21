@@ -1,4 +1,4 @@
-Rollback Gate: SAFE
+Rigseal: SAFE
 warning: No tag matching "v*" is reachable from "main", so base is "main" itself.
 warning: Base's schema maps no tables, so nothing in head can break it. Check that base is the right release.
 base: main (3333333, fallback)

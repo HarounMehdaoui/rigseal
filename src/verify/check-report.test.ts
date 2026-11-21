@@ -7,7 +7,7 @@ const SHA = "a".repeat(40);
 function report(fields: Record<string, unknown> = {}): string {
   return JSON.stringify({
     schemaVersion: 1,
-    tool: { name: "rollback-gate", version: "0.2.0" },
+    tool: { name: "rigseal", version: "0.2.0" },
     verdict: "SAFE",
     head: { ref: "HEAD", sha: SHA },
     ...fields,
@@ -18,6 +18,12 @@ describe("checkReport", () => {
   it("allows a SAFE or RISKY report about the deploy commit, and returns the verdict", () => {
     expect(checkReport(report(), SHA, "unsafe")).toBe("SAFE");
     expect(checkReport(report({ verdict: "RISKY" }), SHA, "unsafe")).toBe("RISKY");
+  });
+
+  it("accepts a report signed before the rename, when the tool was called rollback-gate", () => {
+    expect(
+      checkReport(report({ tool: { name: "rollback-gate", version: "0.3.0" } }), SHA, "unsafe"),
+    ).toBe("SAFE");
   });
 
   it("refuses UNSAFE", () => {

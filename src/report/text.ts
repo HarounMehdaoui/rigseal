@@ -5,7 +5,7 @@ import { worstFirst } from "./worst-first.ts";
 
 export function renderText(report: Report): string {
   const { findings, notes } = worstFirst(report.entries);
-  const lines = [`Rollback Gate: ${report.verdict}`];
+  const lines = [`Rigseal: ${report.verdict}`];
   for (const warning of report.warnings) lines.push(`warning: ${t(warning)}`);
   lines.push(
     `base: ${t(report.base.ref)} (${short(report.base.sha)}, ${report.base.method})`,

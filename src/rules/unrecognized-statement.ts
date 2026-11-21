@@ -9,7 +9,7 @@ export function unrecognizedStatement(change: Unrecognized): Entry {
     ruleId: RULE_ID,
     severity: "RISKY",
     target: change.statement,
-    reason: `Rollback Gate understands the syntax of this ${change.statement} but doesn't model its effect on base (${change.reason}).`,
+    reason: `Rigseal understands the syntax of this ${change.statement} but doesn't model its effect on base (${change.reason}).`,
     fix: "Check the statement by hand. If it is common, open an issue to add a normalizer.",
     source: change.source,
   };

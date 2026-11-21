@@ -34,7 +34,7 @@ export function buildReport({ version, base, head, migrationsDir, analysis }: Re
 
   return {
     schemaVersion: 1,
-    tool: { name: "rollback-gate", version },
+    tool: { name: "rigseal", version },
     verdict: verdictOf(analysis.entries),
     base: { ref: base.ref, sha: base.sha, method: base.method },
     head: { ref: head.ref, sha: head.sha },

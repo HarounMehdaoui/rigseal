@@ -11,7 +11,7 @@ const SIGNER = [
   "--repository",
   "acme/shop",
   "--workflow",
-  ".github/workflows/rollback-gate.yml",
+  ".github/workflows/rigseal.yml",
   "--ref",
   "refs/heads/main",
 ];
@@ -35,7 +35,7 @@ async function files(verdict = "SAFE", sha = SHA): Promise<string[]> {
   const bundle = join(dir, "report.sigstore.json");
   await writeFile(
     report,
-    JSON.stringify({ schemaVersion: 1, tool: { name: "rollback-gate" }, verdict, head: { sha } }),
+    JSON.stringify({ schemaVersion: 1, tool: { name: "rigseal" }, verdict, head: { sha } }),
   );
   await writeFile(bundle, "{}");
   return ["--report", report, "--bundle", bundle];
@@ -63,8 +63,8 @@ describe("runVerify", () => {
     expect(result).toEqual({
       code: 0,
       stdout:
-        `rollback-gate verify: OK: SAFE report for ${SHA}, signed by ` +
-        "https://github.com/acme/shop/.github/workflows/rollback-gate.yml@refs/heads/main\n",
+        `rigseal verify: OK: SAFE report for ${SHA}, signed by ` +
+        "https://github.com/acme/shop/.github/workflows/rigseal.yml@refs/heads/main\n",
       stderr: "",
     });
   });
@@ -83,7 +83,7 @@ describe("runVerify", () => {
     expect(result.code).toBe(1);
     expect(result.stdout).toBe("");
     expect(result.stderr).toBe(
-      "rollback-gate verify: refused: the signature doesn't verify: Error: invalid signature when validating ASN.1 encoded signature\n",
+      "rigseal verify: refused: the signature doesn't verify: Error: invalid signature when validating ASN.1 encoded signature\n",
     );
   });
 
@@ -134,13 +134,13 @@ describe("runVerify", () => {
       },
     });
     expect(code).toBe(2);
-    expect(stderr).toMatch(/^rollback-gate: could not run cosign/);
+    expect(stderr).toMatch(/^rigseal: could not run cosign/);
   });
 
   it("prints its own help", async () => {
     const result = await verify("--help");
     expect(result.code).toBe(0);
-    expect(result.stdout).toMatch(/^Usage: rollback-gate verify/);
+    expect(result.stdout).toMatch(/^Usage: rigseal verify/);
   });
 });
 
@@ -152,7 +152,7 @@ describe("runVerify --from-github", () => {
   ) {
     const report = JSON.stringify({
       schemaVersion: 1,
-      tool: { name: "rollback-gate" },
+      tool: { name: "rigseal" },
       verdict,
       head: { sha: SHA },
     });
@@ -177,7 +177,7 @@ esac`);
       "--repo",
       "acme/shop",
       "--name",
-      "rollback-gate-report",
+      "rigseal-report",
     ]);
   });
 
@@ -194,7 +194,7 @@ esac`);
     expect(result.code).toBe(1);
     expect(result.stderr).toMatch(
       new RegExp(
-        `refused: no completed push run of .github/workflows/rollback-gate.yml on refs/heads/main at ${SHA} in acme/shop`,
+        `refused: no completed push run of .github/workflows/rigseal.yml on refs/heads/main at ${SHA} in acme/shop`,
       ),
     );
   });
@@ -207,14 +207,45 @@ esac`);
     const result = await verify("--from-github", ...SIGNER, "--sha", SHA);
     expect(result.code).toBe(1);
     expect(result.stderr).toMatch(
-      /refused: can't download artifact "rollback-gate-report" of run 42: no valid artifacts found/,
+      /refused: can't download artifact "rigseal-report" or "rollback-gate-report" of run 42: no valid artifacts found/,
     );
+  });
+
+  it("falls back to the artifact name used before the rename", async () => {
+    const report = JSON.stringify({
+      schemaVersion: 1,
+      tool: { name: "rollback-gate" },
+      verdict: "SAFE",
+      head: { sha: SHA },
+    });
+    await gh.behave(`case "$2" in
+  list) echo '[{"databaseId":42,"conclusion":"success","headSha":"${SHA}"}]' ;;
+  download) n=""; d=""; while [ $# -gt 0 ]; do [ "$1" = "--name" ] && n="$2"; [ "$1" = "--dir" ] && d="$2"; shift; done
+    if [ "$n" = "rollback-gate-report" ]; then echo '${report}' > "$d/report.json"; echo '{}' > "$d/report.sigstore.json"
+    else echo 'no valid artifacts found to download' >&2; exit 1; fi ;;
+esac`);
+    const result = await verify("--from-github", ...SIGNER, "--sha", SHA);
+    expect(result.code).toBe(0);
+    const names = (await gh.calls())
+      .filter((c) => c[1] === "download")
+      .map((c) => c[c.indexOf("--name") + 1]);
+    expect(names).toEqual(["rigseal-report", "rollback-gate-report"]);
+  });
+
+  it("uses only the artifact name given with --artifact", async () => {
+    await gh.behave(`case "$2" in
+  list) echo '[{"databaseId":42,"conclusion":"success","headSha":"${SHA}"}]' ;;
+  download) echo 'no valid artifacts found to download' >&2; exit 1 ;;
+esac`);
+    const result = await verify("--from-github", "--artifact", "gate", ...SIGNER, "--sha", SHA);
+    expect(result.code).toBe(1);
+    expect(result.stderr).toMatch(/can't download artifact "gate" of run 42/);
   });
 
   it("exits 2 when gh itself fails, e.g. not logged in", async () => {
     await gh.behave("echo 'gh auth login' >&2; exit 4");
     const result = await verify("--from-github", ...SIGNER, "--sha", SHA);
     expect(result.code).toBe(2);
-    expect(result.stderr).toMatch(/^rollback-gate: gh run list failed: gh auth login/);
+    expect(result.stderr).toMatch(/^rigseal: gh run list failed: gh auth login/);
   });
 });

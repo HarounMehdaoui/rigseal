@@ -2,7 +2,7 @@
 # The action's gate step: refuses a shallow clone, runs the CLI, and records exit code, verdict and report paths as step outputs.
 set -euo pipefail
 
-out="$RUNNER_TEMP/rollback-gate"
+out="$RUNNER_TEMP/rigseal"
 mkdir -p "$out"
 report_md="$out/report.md"
 report_json="$out/report.json"
@@ -11,12 +11,12 @@ rm -f "$report_md" "$report_json"
 
 # The report shown when the tool itself failed: no verdict, and the log says why.
 failure_report() {
-  printf '<!-- rollback-gate -->\n## Rollback Gate: ⚠️ the gate itself failed\n\n%s\n' "$1" > "$report_md"
+  printf '<!-- rigseal -->\n## Rigseal: ⚠️ the gate itself failed\n\n%s\n' "$1" > "$report_md"
 }
 
 if [[ "$(git rev-parse --is-shallow-repository)" == "true" ]]; then
   message="This is a shallow clone, so release tags and history are missing. Set fetch-depth: 0 on actions/checkout."
-  echo "::error title=Rollback Gate::$message"
+  echo "::error title=Rigseal::$message"
   failure_report "$message"
   { echo "exit-code=2"; echo "verdict="; echo "markdown=$report_md"; echo "json="; } >> "$GITHUB_OUTPUT"
   exit 0

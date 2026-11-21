@@ -1,9 +1,11 @@
-// Checks a signed report's content for a deploy: it is a Rollback Gate report, about the deploy commit, with an allowed verdict.
+// Checks a signed report's content for a deploy: it is a Rigseal report, about the deploy commit, with an allowed verdict.
 import { exitCode, type FailOn } from "../exit-code.ts";
 import type { Severity } from "../types.ts";
 import { Refusal } from "./refusal.ts";
 
 const VERDICTS: readonly string[] = ["SAFE", "RISKY", "UNSAFE"];
+// The tool was called Rollback Gate before v0.4.0; reports it signed are still accepted.
+const TOOL_NAMES: readonly unknown[] = ["rigseal", "rollback-gate"];
 
 /**
  * Only call this on bytes whose signature has already been verified. Returns the verdict when the
@@ -25,8 +27,8 @@ export function checkReport(text: string, deploySha: string, failOn: FailOn): Se
     head?: { sha?: unknown };
     verdict?: unknown;
   };
-  if (r.schemaVersion !== 1 || r.tool?.name !== "rollback-gate") {
-    throw new Refusal("the file isn't a Rollback Gate report with schemaVersion 1");
+  if (r.schemaVersion !== 1 || !TOOL_NAMES.includes(r.tool?.name)) {
+    throw new Refusal("the file isn't a Rigseal report with schemaVersion 1");
   }
   if (typeof r.head?.sha !== "string") throw new Refusal("the report names no head commit");
   if (typeof r.verdict !== "string" || !VERDICTS.includes(r.verdict)) {

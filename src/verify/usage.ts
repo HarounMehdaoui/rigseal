@@ -1,8 +1,8 @@
 // The `verify --help` text: every flag, all required except --fail-on, and what the exit codes mean.
 
-export const VERIFY_USAGE = `Usage: rollback-gate verify [options]
+export const VERIFY_USAGE = `Usage: rigseal verify [options]
 
-Before a deploy: checks that a Rollback Gate report was signed by your workflow, at the commit you
+Before a deploy: checks that a Rigseal report was signed by your workflow, at the commit you
 are deploying, is about that commit, and has a verdict your policy allows. Needs cosign on PATH.
 
 Every check always runs; none can be switched off.
@@ -13,11 +13,11 @@ The report and its bundle, from exactly one source:
   --from-github           or fetch them: the newest completed push run of --workflow on --ref at
                           --sha in --repository, any conclusion. Needs gh, logged in or GH_TOKEN
                           with actions:read. What is fetched is untrusted until verified.
-  --artifact <name>       the artifact name with --from-github (default: rollback-gate-report)
+  --artifact <name>       the artifact name with --from-github (default: rigseal-report)
 
 The signer (all required, matched exactly, never as a pattern):
   --repository <o/r>      the repository whose workflow signed, e.g. acme/shop
-  --workflow <path>       the signing workflow file, e.g. .github/workflows/rollback-gate.yml
+  --workflow <path>       the signing workflow file, e.g. .github/workflows/rigseal.yml
   --ref <ref>             the ref it ran on, e.g. refs/heads/main
 
 The deploy:

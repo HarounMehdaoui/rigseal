@@ -4,7 +4,7 @@ import type { Report, ReportEntry } from "./types.ts";
 import { worstFirst } from "./worst-first.ts";
 
 /** The GitHub Action finds its own sticky comment by this marker. */
-const MARKER = "<!-- rollback-gate -->";
+const MARKER = "<!-- rigseal -->";
 
 const BADGE = { SAFE: "🟢", RISKY: "🟡", UNSAFE: "🔴" } as const;
 
@@ -15,7 +15,7 @@ const BADGE = { SAFE: "🟢", RISKY: "🟡", UNSAFE: "🔴" } as const;
  */
 export function renderMarkdown(report: Report): string {
   const { findings, notes } = worstFirst(report.entries);
-  const blocks = [`${MARKER}\n## Rollback Gate: ${BADGE[report.verdict]} ${report.verdict}`];
+  const blocks = [`${MARKER}\n## Rigseal: ${BADGE[report.verdict]} ${report.verdict}`];
 
   if (report.warnings.length > 0) {
     // A GitHub alert; each warning is its own paragraph inside it.

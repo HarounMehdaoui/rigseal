@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "tool": {
-    "name": "rollback-gate",
+    "name": "rigseal",
     "version": "0.0.0"
   },
   "verdict": "SAFE",

@@ -8,7 +8,7 @@ import { downloadArtifact, findGateRun } from "./gh.ts";
 const SHA = "0123456789abcdef0123456789abcdef01234567";
 const QUERY = {
   repository: "acme/shop",
-  workflow: ".github/workflows/rollback-gate.yml",
+  workflow: ".github/workflows/rigseal.yml",
   ref: "refs/heads/main",
   sha: SHA,
 };
@@ -35,7 +35,7 @@ describe("findGateRun", () => {
         "--repo",
         "acme/shop",
         "--workflow",
-        "rollback-gate.yml",
+        "rigseal.yml",
         "--commit",
         SHA,
         "--event",

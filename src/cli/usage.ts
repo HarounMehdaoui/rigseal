@@ -1,6 +1,6 @@
 // The `--help` text: every flag, its default, and what the exit codes mean.
 
-export const USAGE = `Usage: rollback-gate [options]
+export const USAGE = `Usage: rigseal [options]
 
 Can the last release's code still run on the database that head's Prisma migrations leave?
 Reads committed files only (git objects), never the working tree.
@@ -25,5 +25,5 @@ Exit code:
 
   0  SAFE or RISKY   1  UNSAFE (or RISKY with --fail-on risky)   2  the tool itself failed
 
-Before a deploy, check a signed report: rollback-gate verify --help
+Before a deploy, check a signed report: rigseal verify --help
 `;

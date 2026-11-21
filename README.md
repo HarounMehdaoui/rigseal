@@ -1,29 +1,32 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.png">
-  <img src="assets/banner-light.png" alt="Rollback Gate: the demo's v1 release, a rename commit on top of it, and Rollback Gate reporting UNSAFE for that commit" width="820">
+  <img src="assets/banner-light.png" alt="Rigseal: the demo's v1 release, a rename commit on top of it, and Rigseal reporting UNSAFE for that commit" width="820">
 </picture>
 
-**Rollback Gate** is a GitHub Action that checks whether a pull request's Prisma migrations would break
+**Rigseal** is a GitHub Action that checks whether a pull request's Prisma migrations would break
 the previous release if you had to roll back. It answers `SAFE`, `RISKY` or `UNSAFE`, with a reason and
 a fix, and can sign that verdict so a deploy can check it.
+
+**The name:** Rigseal puts a seal on your release rig. It checks a release's migrations before it
+ships, and seals the verdict with a signature that the deploy checks.
 
 ## The problem
 
 When a release goes wrong you redeploy the old code, but the database stays migrated. A one-line field
 rename makes Prisma generate `DROP COLUMN` + `ADD COLUMN`, and after a rollback the old code fails on
-**every** query of that model. Prisma gives no warning. Rollback Gate catches it in the pull request.
+**every** query of that model. Prisma gives no warning. Rigseal catches it in the pull request.
 
 <p align="center">
-  <img src="assets/pr-comment-unsafe.png" alt="Rollback Gate's PR comment: UNSAFE, three findings with reasons and fixes" width="560">
+  <img src="assets/pr-comment-unsafe.png" alt="Rigseal's PR comment: UNSAFE, three findings with reasons and fixes" width="560">
 </p>
 
 The same feature done the safe way (`@map` for the rename, an optional new field) passes:
 
 <p align="center">
-  <img src="assets/pr-comment-safe.png" alt="Rollback Gate's PR comment: SAFE" width="560">
+  <img src="assets/pr-comment-safe.png" alt="Rigseal's PR comment: SAFE" width="560">
 </p>
 
-Both comments are live on the [demo repo](https://github.com/Hron-5/rollback-gate-demo/pulls).
+Both comments are live on the [demo repo](https://github.com/Hron-5/rigseal-demo/pulls).
 
 ## How it works
 
@@ -34,7 +37,7 @@ flowchart LR
   Parse --> Rules[Apply the rules to what base uses]
   Rules --> Report[PR comment and check]
   Rules -. on push .-> Sign[Sign the report with cosign]
-  Sign --> Verify[rollback-gate verify]
+  Sign --> Verify[rigseal verify]
   Verify --> Deploy[Deploy]
 ```
 
@@ -48,7 +51,7 @@ flowchart LR
 ## Usage
 
 ```yaml
-# .github/workflows/rollback-gate.yml
+# .github/workflows/rigseal.yml
 on: pull_request
 permissions:
   contents: read
@@ -60,7 +63,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # needs the release tags
-      - uses: Hron-5/rigseal@v0.3.0
+      - uses: Hron-5/rigseal@v0.4.0
 ```
 
 It also runs locally. This is the CLI on the demo repo:
@@ -87,7 +90,7 @@ It also runs locally. This is the CLI on the demo repo:
 
 Exit codes: `0` SAFE or RISKY, `1` UNSAFE, `2` the tool itself failed.
 
-Before a deploy, `rollback-gate verify` (or the `Hron-5/rigseal/verify` action) checks a signed
+Before a deploy, `rigseal verify` (or the `Hron-5/rigseal/verify` action) checks a signed
 report: `--repository`, `--workflow`, `--ref` and `--sha` say who must have signed it and for which
 commit, and `--from-github` fetches the report for that commit (or pass `--report` and `--bundle`).
 

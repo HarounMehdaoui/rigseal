@@ -1,6 +1,6 @@
-# Checks a signed Rollback Gate report before a deploy: installs pinned cosign, builds the tool at this tag, runs `rollback-gate verify` with every check on.
-name: Rollback Gate verify
-description: Refuse a deploy unless its Rollback Gate report is signed by your workflow, at this commit, about this commit, and not UNSAFE.
+# Checks a signed Rigseal report before a deploy: installs pinned cosign, builds the tool at this tag, runs `rigseal verify` with every check on.
+name: Rigseal verify
+description: Refuse a deploy unless its Rigseal report is signed by your workflow, at this commit, about this commit, and not UNSAFE.
 
 inputs:
   report:
@@ -12,7 +12,7 @@ inputs:
     required: false
     default: ""
   workflow:
-    description: The workflow file that signed the report, e.g. .github/workflows/rollback-gate.yml.
+    description: The workflow file that signed the report, e.g. .github/workflows/rigseal.yml.
     required: true
   ref:
     description: The ref the signing workflow ran on, e.g. refs/heads/main.
@@ -32,7 +32,7 @@ inputs:
   artifact:
     description: When fetching, the artifact name the gate uploaded.
     required: false
-    default: rollback-gate-report
+    default: rigseal-report
   github-token:
     description: When fetching, a token that can read the signing repository's Actions runs (actions read).
     required: false
@@ -45,7 +45,7 @@ runs:
       with:
         node-version-file: ${{ github.action_path }}/../.nvmrc
 
-    - name: Build Rollback Gate
+    - name: Build Rigseal
       shell: bash
       working-directory: ${{ github.action_path }}/..
       run: npm ci --no-audit --no-fund && npm run build

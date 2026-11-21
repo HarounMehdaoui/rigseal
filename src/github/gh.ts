@@ -8,7 +8,7 @@ const execFileAsync = promisify(execFile);
 
 export interface RunQuery {
   readonly repository: string;
-  /** The signing workflow file, e.g. `.github/workflows/rollback-gate.yml`. */
+  /** The signing workflow file, e.g. `.github/workflows/rigseal.yml`. */
   readonly workflow: string;
   /** `refs/heads/<branch>` or `refs/tags/<tag>`. */
   readonly ref: string;

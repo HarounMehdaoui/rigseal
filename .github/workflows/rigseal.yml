@@ -1,6 +1,6 @@
 # Runs this repo's own action (`uses: ./`) on the lab's Prisma folder: on pull requests it comments; on main it signs, then runs the shipped verifier.
 # Trigger is `pull_request`: PR code runs with a read-only token on forks and no secrets.
-name: Rollback Gate
+name: Rigseal
 
 on:
   pull_request:
@@ -14,12 +14,12 @@ permissions:
   id-token: write
 
 concurrency:
-  group: rollback-gate-${{ github.ref }}
+  group: rigseal-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   gate:
-    name: rollback gate (lab)
+    name: rigseal (lab)
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -43,7 +43,7 @@ jobs:
         with:
           report: ${{ steps.gate.outputs.report }}
           bundle: ${{ steps.gate.outputs.bundle }}
-          workflow: .github/workflows/rollback-gate.yml
+          workflow: .github/workflows/rigseal.yml
           ref: ${{ github.ref }}
 
       # And it must refuse: a report changed after signing, and a different deploy commit.
@@ -59,7 +59,7 @@ jobs:
         with:
           report: ${{ runner.temp }}/tampered.json
           bundle: ${{ steps.gate.outputs.bundle }}
-          workflow: .github/workflows/rollback-gate.yml
+          workflow: .github/workflows/rigseal.yml
           ref: ${{ github.ref }}
       - id: wrong-sha
         if: github.event_name == 'push'
@@ -68,7 +68,7 @@ jobs:
         with:
           report: ${{ steps.gate.outputs.report }}
           bundle: ${{ steps.gate.outputs.bundle }}
-          workflow: .github/workflows/rollback-gate.yml
+          workflow: .github/workflows/rigseal.yml
           ref: ${{ github.ref }}
           sha: "0000000000000000000000000000000000000000"
       - name: Both must have been refused
