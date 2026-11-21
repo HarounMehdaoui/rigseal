@@ -23,7 +23,7 @@ The same feature done the safe way (`@map` for the rename, an optional new field
   <img src="assets/pr-comment-safe.png" alt="Rollback Gate's PR comment: SAFE" width="560">
 </p>
 
-Both comments are live on the [demo repo](https://github.com/HarounMehdaoui/rollback-gate-demo/pulls).
+Both comments are live on the [demo repo](https://github.com/Hron-5/rollback-gate-demo/pulls).
 
 ## How it works
 
@@ -60,7 +60,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0 # needs the release tags
-      - uses: HarounMehdaoui/rigseal@v0.3.0
+      - uses: Hron-5/rigseal@v0.3.0
 ```
 
 It also runs locally. This is the CLI on the demo repo:
@@ -87,7 +87,7 @@ It also runs locally. This is the CLI on the demo repo:
 
 Exit codes: `0` SAFE or RISKY, `1` UNSAFE, `2` the tool itself failed.
 
-Before a deploy, `rollback-gate verify` (or the `HarounMehdaoui/rigseal/verify` action) checks a signed
+Before a deploy, `rollback-gate verify` (or the `Hron-5/rigseal/verify` action) checks a signed
 report: `--repository`, `--workflow`, `--ref` and `--sha` say who must have signed it and for which
 commit, and `--from-github` fetches the report for that commit (or pass `--report` and `--bundle`).
 
