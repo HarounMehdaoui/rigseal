@@ -1,347 +1,119 @@
-# Rollback Gate
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.png">
+  <img src="assets/banner-light.png" alt="Rollback Gate: the demo's v1 release, a rename commit on top of it, and Rollback Gate reporting UNSAFE for that commit" width="820">
+</picture>
 
-**Can the last release's code still run on the database this pull request's migrations leave?**
+**Rollback Gate** is a GitHub Action that checks whether a pull request's Prisma migrations would break
+the previous release if you had to roll back. It answers `SAFE`, `RISKY` or `UNSAFE`, with a reason and
+a fix, and can sign that verdict so a deploy can check it.
 
-When a release goes wrong, you redeploy the previous version of the app. Nobody rolls the database
-back: Prisma migrations only go forward. So after a rollback, the **previous release's code runs
-against the database as the new release's migrations left it**. If the new release dropped a column,
-renamed a table or added a required column, the "safe" rollback breaks production too.
+## The problem
 
-Rollback Gate checks this on every pull request, before the merge. It reads the last release's
-Prisma schema and the pull request's new migrations from git, judges every change, and answers
-`SAFE`, `RISKY` or `UNSAFE`, with a reason and a fix for each finding.
+When a release goes wrong you redeploy the old code, but the database stays migrated. A one-line field
+rename makes Prisma generate `DROP COLUMN` + `ADD COLUMN`, and after a rollback the old code fails on
+**every** query of that model. Prisma gives no warning. Rollback Gate catches it in the pull request.
 
-Scope: **Prisma 7.10.1 + PostgreSQL**, one release back, database changes only.
+<p align="center">
+  <img src="assets/pr-comment-unsafe.png" alt="Rollback Gate's PR comment: UNSAFE, three findings with reasons and fixes" width="560">
+</p>
 
-## Why it exists
+The same feature done the safe way (`@map` for the rename, an optional new field) passes:
 
-A one-line rename in `schema.prisma` makes Prisma generate `DROP COLUMN` + `ADD COLUMN`. Shipped and
-then rolled back, the previous release fails on **every query of that model**: Prisma's client
-selects every scalar column by default, so the missing column breaks reads that never used the
-field (`P2022`). Prisma itself gives no warning: after the rollback, `prisma migrate status` reports
-"Database schema is up to date!". A check that runs before the merge is the only warning there is.
+<p align="center">
+  <img src="assets/pr-comment-safe.png" alt="Rollback Gate's PR comment: SAFE" width="560">
+</p>
 
-## What the PR comment looks like
+Both comments are live on the [demo repo](https://github.com/HarounMehdaoui/rollback-gate-demo/pulls).
 
-See it live in the demo repo: [PR #1](https://github.com/HarounMehdaoui/rollback-gate-demo/pull/1)
-breaks rollback to `v1` (red check, UNSAFE), and [PR #2](https://github.com/HarounMehdaoui/rollback-gate-demo/pull/2)
-ships the same feature the safe way (green check, SAFE). An excerpt of PR #1's comment:
+## How it works
 
-```text
-## Rollback Gate: 🔴 UNSAFE
-
-Base `v1` (`b4dc701`, tag) → head `HEAD` (`b099615`)
-3 UNSAFE · 0 RISKY · 2 SAFE notes
-
-### 🔴 UNSAFE · RG-DB-002 · `User.name`
-`prisma/migrations/20261116130000_fullname_phone/migration.sql:8`
-Base uses column "User"."name": by default base's Prisma client selects every scalar column
-of a model, so every query on the model fails, not only the ones that use this field.
-Fix: Retire the field first (`@ignore` it and stop writing it; make it nullable if it is
-required), then drop it one release later.
-
-### 🔴 UNSAFE · RG-DB-005 · `User.fullName`
-…
-▸ 2 SAFE notes (folded)
+```mermaid
+flowchart LR
+  PR[Pull request] --> Git[Read base tag and head from git]
+  Git --> Parse[Parse the new migrations]
+  Parse --> Rules[Apply the rules to what base uses]
+  Rules --> Report[PR comment and check]
+  Rules -. on push .-> Sign[Sign the report with cosign]
+  Sign --> Verify[rollback-gate verify]
+  Verify --> Deploy[Deploy]
 ```
 
-## Use it in GitHub Actions
+1. **Read git.** Base is the latest release tag (`v*`). Head is the pull request.
+2. **Parse the new migrations** with Postgres's own parser (`libpg-query`) into typed changes.
+3. **Apply the rules** against what base's `schema.prisma` uses (read with Prisma's `getDMMF`).
+4. **Report** as a PR comment, a check (exit code), and a JSON file that is byte-identical across runs.
+5. **Sign** the report with cosign on push, e.g. to main (keyless, no secrets).
+6. **Verify before deploy**: the exact signer, the deploy commit, and an allowed verdict.
+
+## Usage
 
 ```yaml
 # .github/workflows/rollback-gate.yml
-name: Rollback Gate
-on:
-  pull_request: # never the _target variant: PR code must not run with a write token
+on: pull_request
 permissions:
   contents: read
-  pull-requests: write # for the sticky comment
+  pull-requests: write # for the PR comment
 jobs:
   gate:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
         with:
-          fetch-depth: 0 # tags and history: base is found from release tags
-          persist-credentials: false
+          fetch-depth: 0 # needs the release tags
       - uses: HarounMehdaoui/rigseal@v0.3.0
 ```
 
-For supply-chain safety, pin both actions to a full commit SHA instead of a tag.
+It also runs locally. This is the CLI on the demo repo:
 
-The action builds the tool at the tag you use, runs it, writes the report to the job summary, keeps
-**one** comment on the pull request (edited on every push), and sets the check from the verdict.
-Pull requests from forks get the job summary only, because their token is read-only.
+<p align="center">
+  <img src="assets/demo.gif" alt="Terminal: the CLI reports UNSAFE (exit 1) for the breaking branch and SAFE (exit 0) for the safe one" width="820">
+</p>
+<sub>Drawn frame by frame from the CLI's real output; it is not a screen recording.</sub>
 
-| Input           | Default                | Meaning                                                     |
-| --------------- | ---------------------- | ----------------------------------------------------------- |
-| `target`        | the PR's base branch   | branch whose newest release tag is base                     |
-| `tag-pattern`   | `v*`                   | which tags are releases                                     |
-| `schema`        | `prisma/schema.prisma` | the schema file, repo-relative                              |
-| `migrations`    | `prisma/migrations`    | the migrations folder, repo-relative                        |
-| `fail-on`       | `unsafe`               | `risky` also fails the check on RISKY                       |
-| `comment`       | `true`                 | keep the sticky PR comment                                  |
-| `github-token`  | `github.token`         | token for the comment; needs `pull-requests: write`         |
-| `sign`          | `false`                | sign the JSON report with cosign on push events (see below) |
-| `artifact-name` | `rollback-gate-report` | name of the uploaded artifact with the signed report        |
+## Flags
 
-Outputs: `verdict` (`SAFE`/`RISKY`/`UNSAFE`, empty if the tool failed), `exit-code`, `report` (path
-of the JSON report) and `bundle` (path of its cosign bundle, when signed).
+| CLI flag                             | Action input  | What it does                                                                        |
+| ------------------------------------ | ------------- | ----------------------------------------------------------------------------------- |
+| `--target <branch>`                  | `target`      | branch whose latest release tag is base (CLI: `main`; action: the PR's base branch) |
+| `--tag-pattern <glob>`               | `tag-pattern` | which tags count as releases (default `v*`)                                         |
+| `--base <ref>`                       |               | compare against this ref instead of a release tag                                   |
+| `--head <ref>`                       |               | the code under review (default `HEAD`)                                              |
+| `--schema <path>`                    | `schema`      | default `prisma/schema.prisma`                                                      |
+| `--migrations <path>`                | `migrations`  | default `prisma/migrations`                                                         |
+| `--json <file>`, `--markdown <file>` |               | also write the JSON or Markdown report                                              |
+| `--fail-on risky`                    | `fail-on`     | make RISKY fail too (default: only UNSAFE fails)                                    |
+|                                      | `sign`        | `"true"`: sign the report on push events                                            |
+|                                      | `comment`     | `"false"`: no PR comment                                                            |
 
-### Signed reports
+Exit codes: `0` SAFE or RISKY, `1` UNSAFE, `2` the tool itself failed.
 
-With `sign: "true"`, the action signs the JSON report with [cosign](https://github.com/sigstore/cosign)
-on **push** events, keyless: the workflow's OIDC token gets a short-lived certificate naming the
-repository, the workflow and the commit, and the signature is recorded in Sigstore's public
-transparency log. No key to store or rotate. The report and its bundle (`report.sigstore.json`) are
-uploaded as the `rollback-gate-report` artifact. On pull requests nothing is signed: their code is
-untrusted and may never merge.
+Before a deploy, `rollback-gate verify` (or the `HarounMehdaoui/rigseal/verify` action) checks a signed
+report: `--repository`, `--workflow`, `--ref` and `--sha` say who must have signed it and for which
+commit, and `--from-github` fetches the report for that commit (or pass `--report` and `--bundle`).
 
-```yaml
-on:
-  push:
-    branches: [main]
-permissions:
-  contents: read
-  id-token: write # for keyless signing
-jobs:
-  gate:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: HarounMehdaoui/rigseal@v0.3.0
-        with:
-          sign: "true"
-```
+## Rules in brief
 
-### Verify before you deploy
+| Verdict                        | When base uses what changes                                                                                                                                                                                                                                                                      |
+| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 🔴 **UNSAFE**: base will break | drop or rename a table or column · add a column that ends NOT NULL with no default · drop a default the database fills, on a NOT NULL column · a type change it can't classify, or one with `USING` · rename an enum · SQL that doesn't parse                                                    |
+| 🟡 **RISKY**: base may break   | narrow a type, or widen it past what base's field type holds · SET / DROP NOT NULL · drop a database-filled default on a nullable column · new unique, CHECK or foreign key · add or remove an enum value · UPDATE or DELETE on its data · edit a released migration · SQL it doesn't understand |
+| 🟢 **SAFE**                    | everything else, with a note saying why                                                                                                                                                                                                                                                          |
 
-A signature only helps if the check is strict, and hand-written checks are where it usually goes
-wrong: a regexp identity that matches more than it should, a missing commit pin, a forgotten verdict
-check. So the check ships with the tool, and **every part of it always runs**:
-
-- the report was signed by **exactly** your repository's workflow file on **exactly** your ref
-  (built from strictly validated parts, never a pattern), by GitHub Actions' OIDC issuer, on a
-  `push` event;
-- the signing workflow ran **at the commit you are deploying**, and the signed report is **about**
-  that commit (`head.sha`);
-- the verdict is allowed: UNSAFE is refused, and RISKY too with `fail-on: risky`;
-- a missing report or bundle refuses the deploy, and the report is read once, so it can't be swapped
-  between the signature check and the content check.
-
-In a deploy job that runs after the gate in the same workflow:
-
-```yaml
-deploy:
-  needs: gate
-  runs-on: ubuntu-24.04
-  steps:
-    - uses: actions/download-artifact@v8
-      with:
-        name: rollback-gate-report
-    - uses: HarounMehdaoui/rigseal/verify@v0.3.0
-      with:
-        report: report.json
-        bundle: report.sigstore.json
-        workflow: .github/workflows/rollback-gate.yml # the file that signed it
-        ref: refs/heads/main
-        # repository and sha default to this run's repository and commit
-    - run: ./deploy.sh # only reached if verification passed
-```
-
-In a deploy in **another workflow**, knowing only the commit, leave out `report` and `bundle`: the
-verifier finds the newest completed `push` run of the signing workflow on that ref at that commit
-and downloads its artifact itself. Whatever it downloads is untrusted until the signature checks
-pass; no run, or an expired artifact, refuses the deploy.
-
-```yaml
-permissions:
-  contents: read
-  actions: read # to find the gate run and download its artifact
-jobs:
-  deploy:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: HarounMehdaoui/rigseal/verify@v0.3.0
-        with:
-          workflow: .github/workflows/rollback-gate.yml
-          ref: refs/heads/main
-          sha: ${{ github.sha }} # the commit you are deploying
-      - run: ./deploy.sh
-```
-
-Anywhere else, with Node 26 and cosign installed (and [gh](https://cli.github.com) for
-`--from-github`):
-
-```sh
-# with local files
-node /path/to/rigseal/dist/cli.js verify \
-  --report report.json --bundle report.sigstore.json \
-  --repository OWNER/REPO --workflow .github/workflows/rollback-gate.yml --ref refs/heads/main \
-  --sha "$DEPLOY_SHA"
-
-# or fetched by commit (gh logged in, or GH_TOKEN with actions:read)
-node /path/to/rigseal/dist/cli.js verify --from-github \
-  --repository OWNER/REPO --workflow .github/workflows/rollback-gate.yml --ref refs/heads/main \
-  --sha "$DEPLOY_SHA"
-```
-
-| Exit code | Meaning                                                                                             |
-| --------- | --------------------------------------------------------------------------------------------------- |
-| `0`       | deploy allowed                                                                                      |
-| `1`       | deploy refused: bad or missing signature, wrong signer, wrong commit, blocked verdict, missing file |
-| `2`       | the tool itself failed: bad arguments, cosign or gh not installed or not logged in                  |
-
-The JSON is byte-identical for the same inputs, so the signature covers exactly what the gate
-decided. Changing any byte of the report, the verdict included, makes verification fail.
-
-## Use it from the command line
-
-Requires Node 26 and git.
-
-```sh
-git clone https://github.com/HarounMehdaoui/rigseal.git
-cd rigseal
-npm ci
-npm run build
-cd /path/to/your/prisma/project
-node /path/to/rigseal/dist/cli.js --help
-node /path/to/rigseal/dist/cli.js --json report.json --markdown report.md
-```
-
-It reads committed files from git objects only, never your working tree, so commit first.
-
-```text
-Choosing base (the release a rollback goes back to):
-  --target <branch>       branch whose latest release tag is base (default: main)
-  --tag-pattern <glob>    release tags to look for (default: v*)
-  --base <ref>            use this ref as base instead; not with --target or --tag-pattern
-Head and paths:
-  --head <ref>            the code under review (default: HEAD)
-  --schema <path>         schema file, repo-relative (default: prisma/schema.prisma)
-  --migrations <path>     migrations folder, repo-relative (default: prisma/migrations)
-Reports (the text report always goes to stdout):
-  --json <file>           also write the JSON report
-  --markdown <file>       also write the Markdown report
-Exit code:
-  --fail-on <level>       "unsafe" (default) or "risky"
-```
-
-| Exit code | Meaning                                                                          |
-| --------- | -------------------------------------------------------------------------------- |
-| `0`       | SAFE or RISKY (RISKY → `1` with `--fail-on risky`)                               |
-| `1`       | UNSAFE, including a migration Postgres can't parse                               |
-| `2`       | the tool itself failed: bad arguments, git error, missing or invalid base schema |
-
-A broken tool never looks like an unsafe change, and an unsafe change never looks like a broken tool.
-
-## How it decides
-
-- **Base** is the release production runs: the highest-version tag matching `v*` reachable from the
-  target branch. With no such tag, the target branch itself, with a warning in the report.
-- **What base uses** comes from base's `schema.prisma`, read with Prisma's own parser: the tables,
-  columns (by database name, after `@map`/`@@map`) and enums its client touches. `@ignore`d fields
-  and columns added in this release can change freely.
-- **What head changes** comes from head's **new** migrations, parsed with Postgres's own grammar
-  (`libpg-query`) into typed changes. Released migrations are never re-parsed; editing or deleting
-  one is a finding of its own.
-- **Every change gets exactly one entry**: a finding (RISKY or UNSAFE) or a SAFE note saying why it's
-  harmless. The worst entry is the verdict.
-- **When unsure, it fails closed**: SQL that won't parse is UNSAFE, SQL it doesn't model is RISKY,
-  a type change it can't classify is UNSAFE. It never answers SAFE by guessing.
-
-| Rule      | Change                                                                                  | Verdict when base uses it      |
-| --------- | --------------------------------------------------------------------------------------- | ------------------------------ |
-| RG-DB-001 | drop table                                                                              | UNSAFE                         |
-| RG-DB-002 | drop column                                                                             | UNSAFE                         |
-| RG-DB-003 | rename table                                                                            | UNSAFE                         |
-| RG-DB-004 | rename column                                                                           | UNSAFE                         |
-| RG-DB-005 | column that ends NOT NULL with no database default (judged at the end of the release)   | UNSAFE                         |
-| RG-DB-006 | type narrowing                                                                          | RISKY                          |
-| RG-DB-007 | type widening that base's Prisma scalar can't hold (e.g. `int` → `bigint` for an `Int`) | RISKY                          |
-| RG-DB-008 | type change it can't classify, or one with `USING`                                      | UNSAFE                         |
-| RG-DB-009 | SET NOT NULL on a field base leaves optional                                            | RISKY                          |
-| RG-DB-010 | DROP NOT NULL on a field base has as required                                           | RISKY                          |
-| RG-DB-011 | drop a default the database applies for base (`autoincrement()`, `dbgenerated()`)       | UNSAFE if NOT NULL, else RISKY |
-| RG-DB-012 | new unique constraint, unique index or primary key                                      | RISKY                          |
-| RG-DB-013 | new CHECK constraint                                                                    | RISKY                          |
-| RG-DB-014 | new foreign key                                                                         | RISKY                          |
-| RG-DB-015 | enum value added (base can't read it: `P2023`)                                          | RISKY                          |
-| RG-DB-016 | enum value removed (recognized from Prisma's enum-recreate sequence)                    | RISKY                          |
-| RG-DB-017 | enum type renamed                                                                       | UNSAFE                         |
-| RG-DB-018 | UPDATE that sets a column base uses (a backfill of a new column is SAFE)                | RISKY                          |
-| RG-DB-019 | DELETE or TRUNCATE                                                                      | RISKY                          |
-| RG-DB-020 | a released migration edited or deleted                                                  | RISKY                          |
-| RG-DB-021 | a migration Postgres can't parse                                                        | UNSAFE                         |
-| RG-DB-022 | a statement that parses but isn't modelled                                              | RISKY                          |
-| RG-DB-000 | anything else recognized (create table/index, drop index/constraint, …)                 | SAFE note                      |
-
-**The safe way to rename** takes four releases (expand, switch, retire, contract), and the gate
-says SAFE, RISKY, SAFE, SAFE across them. The RISKY step is the switch: the old column becomes
-nullable while the previous release still treats it as required (RG-DB-010), and a catch-up UPDATE
-writes the new column, which the previous release already uses (RG-DB-018). This exact sequence is
-an acceptance test.
-
-## The JSON report
-
-`--json` writes a report meant to be signed later: `schemaVersion: 1`, tool version, base and head
-SHAs, how base was chosen (`tag`, `fallback` or `explicit`), warnings, every migration with its
-SHA-256, the verdict, and every entry with its repo-relative file and line. Keys are in a fixed
-order, there is no timestamp, and the same inputs give byte-identical files (tested by running the
-CLI twice).
-
-## Architecture
-
-```text
-  EDGE (I/O)                PURE CORE (plain data in, plain data out)                 EDGE (I/O)
-  git: base tag, files ─►  base schema ─► used set ──────────────┐
-                           migrations ──► history (SHA-256 diff) ─┼─► rules ─► entries ─► verdict ─► report ─► stdout, files,
-                           new SQL ─────► parse ─► normalize ─────┘                                            exit code
-```
-
-- `src/git/` is the only code that runs git (`execFile`, argument arrays, no shell).
-- `src/schema/` turns base's schema into the used set with Prisma's `getDMMF`.
-- `src/sql/parse.ts` is the only importer of `libpg-query`; `src/sql/normalize/` turns statements
-  into typed changes, one per action.
-- `src/rules/` has one file per rule and does no I/O.
-- `src/report/` renders text, Markdown and JSON from one report object.
-- `src/cli.ts` and `action.yml` are the shells around it.
-
-Tests run at three layers: unit tests next to the code, scenario folders (`scenarios/<name>/` with
-base, head and the expected entries, no git), and end-to-end tests that run the built CLI on
-throwaway git repos with tags (`npm run test:e2e`).
+Every change gets exactly one entry. The worst entry is the verdict. When unsure, it says RISKY or
+UNSAFE, never SAFE.
 
 ## Limitations
 
-- **Prisma 7.10.1 and PostgreSQL only**, the `public` schema only, one release back.
-- **"Used" is schema-level.** Every field in base's schema counts as used, because Prisma's client
-  reads them all by default. The tool doesn't scan your TypeScript, so a field the code never touches
-  still counts. `$queryRaw` and other raw SQL aren't seen.
-- **Default paths or flags only.** It doesn't read `prisma.config.ts` (it never executes project
-  code). Multi-file schemas aren't supported.
-- **It doesn't judge whether a migration is safe to run** (locks, table rewrites, data that fails a
-  new constraint). Use [squawk](https://github.com/sbdchd/squawk) for that.
-- **Not built in v0.1:** dropping a unique index that base's `upsert` relies on (RG-DB-023) is
-  reported as a SAFE note. There is no way to acknowledge a known break; a team that breaks rollback
-  on purpose sees a red check.
-- **RISKY passes by default.** Use `fail-on: risky` if your team wants RISKY to block.
-
-## Roadmap
-
-- **An attestation on container images**, so the verdict travels with the image in its registry.
-- Later, as needed: a rollback rehearsal in a throwaway Postgres (it can only raise the verdict); a
-  reviewed acknowledgement file for intended breaks; reading paths from `prisma.config.ts` without
-  executing it.
+- Prisma 7 + PostgreSQL only, one release back, the `public` schema only.
+- "Used" means "in base's schema". It doesn't read your TypeScript or raw SQL.
+- It doesn't check whether a migration is safe to _run_ (locks, long rewrites).
 
 ## Development
 
 ```sh
 npm ci
-npm run lint        # Biome + TypeScript
-npm test            # unit + scenario tests
-npm run test:e2e    # builds dist/, then runs the CLI on throwaway git repos
+npm run lint && npm test   # unit + scenario tests
+npm run test:e2e           # the built CLI on throwaway git repos
 ```
 
 ## License

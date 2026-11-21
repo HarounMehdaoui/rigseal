@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400">
+  <title>Rollback Gate: the demo's v1 release, a rename commit on top, and Rollback Gate reporting UNSAFE for it</title>
+  <rect width="1200" height="400" fill="#ffffff"/>
+  <text x="56" y="84" font-family="Noto Sans" font-size="46" font-weight="700" fill="#1f2328">Rollback Gate</text>
+  <text x="58" y="120" font-family="Noto Sans" font-size="21" fill="#59636e">Can the last release still run on the database this pull request leaves behind?</text>
+  <line x1="56" y1="150" x2="1144" y2="150" stroke="#d1d9e0" stroke-width="1"/>
+  <g font-family="Noto Sans Mono" font-size="18" fill="#1f2328" xml:space="preserve">
+    <text x="56" y="190"><tspan fill="#59636e">$ </tspan>git log --oneline --graph</text>
+    <text x="56" y="216">* <tspan fill="#9a6700">3a54e02</tspan> feat: rename name to fullName and add a required phone</text>
+    <text x="56" y="242">* <tspan fill="#9a6700">18e8b9e</tspan> <tspan fill="#9a6700">(</tspan><tspan fill="#1a7f37">tag: v1</tspan><tspan fill="#9a6700">)</tspan> feat: ship v1 of the lab app (User with name and email)</text>
+    <text x="56" y="274"><tspan fill="#59636e">$ </tspan>node ../rigseal/dist/cli.js --head 3a54e02</text>
+    <text x="56" y="300">Rollback Gate: UNSAFE</text>
+    <text x="56" y="326">base: v1 (18e8b9e, tag)</text>
+    <text x="56" y="352">head: 3a54e02 (3a54e02)</text>
+    <text x="56" y="378">3 UNSAFE, 0 RISKY, 2 SAFE notes</text>
+  </g>
+</svg>
